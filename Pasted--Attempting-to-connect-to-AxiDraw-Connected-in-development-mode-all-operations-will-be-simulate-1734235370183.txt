@@ -1,0 +1,563 @@
+
+Attempting to connect to AxiDraw...
+Connected in development mode - all operations will be simulated
+Starting plot simulation...
+Text: "hi there my name is Kyle and im plotting"
+Font size: 19pt
+Development mode: Simulating AxiDraw plotting
+Validating paths and simulating movements...
+Path 0: Moving to start position (50.6, 79.1)
+Lowering pen
+Drawing line to (50.7, 81.3)
+Drawing line to (50.8, 83.5)
+Drawing line to (50.9, 85.8)
+Drawing line to (51.0, 88.0)
+Drawing line to (51.1, 90.3)
+Drawing line to (51.5, 89.7)
+Drawing line to (51.9, 89.2)
+Drawing line to (52.3, 88.6)
+Drawing line to (52.7, 88.1)
+Drawing line to (53.1, 87.6)
+Drawing line to (53.9, 87.1)
+Drawing line to (54.7, 88.1)
+Drawing line to (55.5, 89.2)
+Drawing line to (56.3, 90.3)
+Drawing line to (50.6, 79.1)
+Path 0: Total drawing distance: 32.2 units
+Raising pen
+Path 1: Moving to start position (65.2, 80.6)
+Lowering pen
+Drawing line to (65.2, 80.6)
+Drawing line to (65.2, 80.5)
+Drawing line to (65.2, 80.4)
+Drawing line to (65.3, 80.6)
+Drawing line to (65.2, 80.6)
+Path 1: Total drawing distance: 0.5 units
+Raising pen
+Path 2: Moving to start position (64.6, 86.4)
+Lowering pen
+Drawing line to (64.7, 87.4)
+Drawing line to (64.7, 88.5)
+Drawing line to (64.8, 89.5)
+Drawing line to (64.9, 90.5)
+Drawing line to (65.0, 91.5)
+Drawing line to (64.6, 86.4)
+Path 2: Total drawing distance: 10.3 units
+Raising pen
+Path 3: Moving to start position (85.6, 86.9)
+Lowering pen
+Drawing line to (86.8, 86.7)
+Drawing line to (87.9, 86.5)
+Drawing line to (89.0, 86.3)
+Drawing line to (90.1, 86.2)
+Drawing line to (91.3, 86.0)
+Drawing line to (92.4, 85.8)
+Drawing line to (93.5, 85.6)
+Drawing line to (85.6, 86.9)
+Path 3: Total drawing distance: 16.0 units
+Raising pen
+Path 4: Moving to start position (89.6, 79.4)
+Lowering pen
+Drawing line to (89.7, 81.6)
+Drawing line to (89.7, 83.7)
+Drawing line to (89.7, 85.9)
+Drawing line to (89.8, 88.1)
+Drawing line to (89.8, 90.3)
+Drawing line to (89.6, 79.4)
+Path 4: Total drawing distance: 21.8 units
+Raising pen
+Path 5: Moving to start position (100.0, 79.1)
+Lowering pen
+Drawing line to (100.2, 81.3)
+Drawing line to (100.3, 83.5)
+Drawing line to (100.4, 85.8)
+Drawing line to (100.5, 88.0)
+Drawing line to (100.6, 90.3)
+Drawing line to (101.0, 89.7)
+Drawing line to (101.4, 89.2)
+Drawing line to (101.8, 88.6)
+Drawing line to (102.2, 88.1)
+Drawing line to (102.6, 87.6)
+Drawing line to (103.4, 87.1)
+Drawing line to (104.2, 88.1)
+Drawing line to (105.0, 89.2)
+Drawing line to (105.8, 90.3)
+Drawing line to (100.0, 79.1)
+Path 5: Total drawing distance: 32.2 units
+Raising pen
+Path 6: Moving to start position (114.1, 89.7)
+Lowering pen
+Drawing line to (115.3, 89.1)
+Drawing line to (116.4, 88.4)
+Drawing line to (117.6, 87.7)
+Drawing line to (117.6, 87.1)
+Drawing line to (116.9, 87.4)
+Drawing line to (116.3, 87.8)
+Drawing line to (115.7, 88.1)
+Drawing line to (115.1, 88.4)
+Drawing line to (114.5, 88.8)
+Drawing line to (115.1, 89.7)
+Drawing line to (115.8, 90.6)
+Drawing line to (116.4, 91.5)
+Drawing line to (118.7, 91.3)
+Drawing line to (114.1, 89.7)
+Path 6: Total drawing distance: 18.5 units
+Raising pen
+Path 7: Moving to start position (127.8, 92.8)
+Lowering pen
+Drawing line to (128.7, 90.8)
+Drawing line to (129.5, 88.9)
+Drawing line to (130.3, 87.0)
+Drawing line to (127.8, 92.8)
+Path 7: Total drawing distance: 12.5 units
+Raising pen
+Path 8: Moving to start position (141.8, 89.7)
+Lowering pen
+Drawing line to (143.0, 89.1)
+Drawing line to (144.1, 88.4)
+Drawing line to (145.3, 87.7)
+Drawing line to (145.3, 87.1)
+Drawing line to (144.7, 87.4)
+Drawing line to (144.1, 87.8)
+Drawing line to (143.4, 88.1)
+Drawing line to (142.8, 88.4)
+Drawing line to (142.2, 88.8)
+Drawing line to (142.9, 89.7)
+Drawing line to (143.5, 90.6)
+Drawing line to (144.1, 91.5)
+Drawing line to (146.4, 91.3)
+Drawing line to (141.8, 89.7)
+Path 8: Total drawing distance: 18.5 units
+Raising pen
+Path 9: Moving to start position (163.3, 92.7)
+Lowering pen
+Drawing line to (163.8, 91.6)
+Drawing line to (164.2, 90.6)
+Drawing line to (164.7, 89.5)
+Drawing line to (165.2, 88.5)
+Drawing line to (165.6, 87.4)
+Drawing line to (166.1, 88.6)
+Drawing line to (166.7, 89.9)
+Drawing line to (167.2, 91.1)
+Drawing line to (167.6, 90.6)
+Drawing line to (168.1, 90.2)
+Drawing line to (168.5, 89.7)
+Drawing line to (169.0, 89.3)
+Drawing line to (169.4, 88.8)
+Drawing line to (169.8, 88.4)
+Drawing line to (170.3, 87.9)
+Drawing line to (170.6, 88.5)
+Drawing line to (171.0, 89.2)
+Drawing line to (171.4, 89.8)
+Drawing line to (171.7, 90.5)
+Drawing line to (172.1, 91.1)
+Drawing line to (172.4, 91.8)
+Drawing line to (172.8, 92.4)
+Drawing line to (163.3, 92.7)
+Path 9: Total drawing distance: 28.8 units
+Raising pen
+Path 10: Moving to start position (177.1, 85.6)
+Lowering pen
+Drawing line to (177.6, 86.5)
+Drawing line to (178.0, 87.3)
+Drawing line to (178.5, 88.1)
+Drawing line to (177.1, 85.6)
+Path 10: Total drawing distance: 5.7 units
+Raising pen
+Path 11: Moving to start position (199.3, 92.7)
+Lowering pen
+Drawing line to (200.0, 91.6)
+Drawing line to (200.6, 90.4)
+Drawing line to (201.3, 89.2)
+Drawing line to (202.0, 88.1)
+Drawing line to (202.6, 86.9)
+Drawing line to (203.1, 86.3)
+Drawing line to (203.6, 87.2)
+Drawing line to (204.1, 88.1)
+Drawing line to (204.7, 88.9)
+Drawing line to (205.2, 89.8)
+Drawing line to (205.7, 90.7)
+Drawing line to (199.3, 92.7)
+Path 11: Total drawing distance: 19.2 units
+Raising pen
+Path 12: Moving to start position (217.4, 85.6)
+Lowering pen
+Drawing line to (216.7, 86.5)
+Drawing line to (216.0, 87.3)
+Drawing line to (215.4, 88.2)
+Drawing line to (214.7, 89.1)
+Drawing line to (214.0, 90.0)
+Drawing line to (214.8, 89.7)
+Drawing line to (215.7, 89.5)
+Drawing line to (216.3, 90.3)
+Drawing line to (216.9, 91.0)
+Drawing line to (217.5, 91.8)
+Drawing line to (217.4, 85.6)
+Path 12: Total drawing distance: 16.3 units
+Raising pen
+Path 13: Moving to start position (226.7, 92.7)
+Lowering pen
+Drawing line to (227.1, 91.6)
+Drawing line to (227.6, 90.6)
+Drawing line to (228.0, 89.5)
+Drawing line to (228.5, 88.5)
+Drawing line to (228.9, 87.4)
+Drawing line to (229.5, 88.6)
+Drawing line to (230.0, 89.9)
+Drawing line to (230.5, 91.1)
+Drawing line to (231.0, 90.6)
+Drawing line to (231.4, 90.2)
+Drawing line to (231.8, 89.7)
+Drawing line to (232.3, 89.3)
+Drawing line to (232.7, 88.8)
+Drawing line to (233.2, 88.4)
+Drawing line to (233.6, 87.9)
+Drawing line to (234.0, 88.5)
+Drawing line to (234.3, 89.2)
+Drawing line to (234.7, 89.8)
+Drawing line to (235.1, 90.5)
+Drawing line to (235.4, 91.1)
+Drawing line to (235.8, 91.8)
+Drawing line to (236.1, 92.4)
+Drawing line to (226.7, 92.7)
+Path 13: Total drawing distance: 28.8 units
+Raising pen
+Path 14: Moving to start position (240.8, 89.7)
+Lowering pen
+Drawing line to (241.9, 89.1)
+Drawing line to (243.1, 88.4)
+Drawing line to (244.2, 87.7)
+Drawing line to (244.2, 87.1)
+Drawing line to (243.6, 87.4)
+Drawing line to (243.0, 87.8)
+Drawing line to (242.4, 88.1)
+Drawing line to (241.8, 88.4)
+Drawing line to (241.2, 88.8)
+Drawing line to (241.8, 89.7)
+Drawing line to (242.4, 90.6)
+Drawing line to (243.1, 91.5)
+Drawing line to (245.3, 91.3)
+Drawing line to (240.8, 89.7)
+Path 14: Total drawing distance: 18.5 units
+Raising pen
+Path 15: Moving to start position (263.1, 80.6)
+Lowering pen
+Drawing line to (263.1, 80.6)
+Drawing line to (263.1, 80.5)
+Drawing line to (263.2, 80.4)
+Drawing line to (263.2, 80.6)
+Drawing line to (263.1, 80.6)
+Path 15: Total drawing distance: 0.5 units
+Raising pen
+Path 16: Moving to start position (262.5, 86.4)
+Lowering pen
+Drawing line to (262.6, 87.4)
+Drawing line to (262.7, 88.5)
+Drawing line to (262.7, 89.5)
+Drawing line to (262.8, 90.5)
+Drawing line to (262.9, 91.5)
+Drawing line to (262.5, 86.4)
+Path 16: Total drawing distance: 10.3 units
+Raising pen
+Path 17: Moving to start position (279.9, 85.6)
+Lowering pen
+Drawing line to (279.4, 85.2)
+Drawing line to (278.8, 85.6)
+Drawing line to (278.3, 85.9)
+Drawing line to (277.8, 86.3)
+Drawing line to (277.9, 87.0)
+Drawing line to (278.1, 87.8)
+Drawing line to (278.2, 88.5)
+Drawing line to (278.4, 89.2)
+Drawing line to (278.5, 89.9)
+Drawing line to (278.6, 90.7)
+Drawing line to (278.8, 91.4)
+Drawing line to (278.1, 92.0)
+Drawing line to (277.5, 91.9)
+Drawing line to (277.0, 91.9)
+Drawing line to (276.4, 91.8)
+Drawing line to (279.9, 85.6)
+Path 17: Total drawing distance: 17.6 units
+Raising pen
+Path 18: Moving to start position (298.7, 77.0)
+Lowering pen
+Drawing line to (298.6, 79.5)
+Drawing line to (298.5, 82.0)
+Drawing line to (298.3, 84.5)
+Drawing line to (298.2, 87.0)
+Drawing line to (298.0, 89.5)
+Drawing line to (298.7, 77.0)
+Path 18: Total drawing distance: 25.0 units
+Raising pen
+Path 19: Moving to start position (305.9, 80.5)
+Lowering pen
+Drawing line to (303.3, 82.5)
+Drawing line to (303.4, 84.2)
+Drawing line to (303.5, 85.9)
+Drawing line to (303.5, 87.6)
+Drawing line to (304.0, 88.3)
+Drawing line to (304.5, 89.1)
+Drawing line to (305.1, 89.9)
+Drawing line to (305.6, 90.7)
+Drawing line to (306.1, 91.5)
+Drawing line to (305.9, 80.5)
+Path 19: Total drawing distance: 23.9 units
+Raising pen
+Path 20: Moving to start position (311.7, 85.6)
+Lowering pen
+Drawing line to (312.1, 86.5)
+Drawing line to (312.6, 87.3)
+Drawing line to (313.1, 88.1)
+Drawing line to (311.7, 85.6)
+Path 20: Total drawing distance: 5.7 units
+Raising pen
+Path 21: Moving to start position (327.8, 77.9)
+Lowering pen
+Drawing line to (327.5, 80.4)
+Drawing line to (327.2, 82.8)
+Drawing line to (326.9, 85.3)
+Drawing line to (326.6, 87.7)
+Drawing line to (326.3, 90.2)
+Drawing line to (327.8, 77.9)
+Path 21: Total drawing distance: 24.7 units
+Raising pen
+Path 22: Moving to start position (339.7, 89.7)
+Lowering pen
+Drawing line to (340.9, 89.1)
+Drawing line to (342.0, 88.4)
+Drawing line to (343.2, 87.7)
+Drawing line to (343.2, 87.1)
+Drawing line to (342.6, 87.4)
+Drawing line to (342.0, 87.8)
+Drawing line to (341.4, 88.1)
+Drawing line to (340.8, 88.4)
+Drawing line to (340.2, 88.8)
+Drawing line to (340.8, 89.7)
+Drawing line to (341.4, 90.6)
+Drawing line to (342.0, 91.5)
+Drawing line to (344.3, 91.3)
+Drawing line to (339.7, 89.7)
+Path 22: Total drawing distance: 18.5 units
+Raising pen
+Path 23: Moving to start position (365.8, 85.6)
+Lowering pen
+Drawing line to (365.1, 86.5)
+Drawing line to (364.5, 87.3)
+Drawing line to (363.8, 88.2)
+Drawing line to (363.1, 89.1)
+Drawing line to (362.5, 90.0)
+Drawing line to (363.3, 89.7)
+Drawing line to (364.1, 89.5)
+Drawing line to (364.7, 90.3)
+Drawing line to (365.3, 91.0)
+Drawing line to (365.9, 91.8)
+Drawing line to (365.8, 85.6)
+Path 23: Total drawing distance: 16.3 units
+Raising pen
+Path 24: Moving to start position (375.4, 92.7)
+Lowering pen
+Drawing line to (376.1, 91.6)
+Drawing line to (376.8, 90.4)
+Drawing line to (377.4, 89.2)
+Drawing line to (378.1, 88.1)
+Drawing line to (378.8, 86.9)
+Drawing line to (379.3, 86.3)
+Drawing line to (379.8, 87.2)
+Drawing line to (380.3, 88.1)
+Drawing line to (380.8, 88.9)
+Drawing line to (381.3, 89.8)
+Drawing line to (381.8, 90.7)
+Drawing line to (375.4, 92.7)
+Path 24: Total drawing distance: 19.2 units
+Raising pen
+Path 25: Moving to start position (395.9, 87.7)
+Lowering pen
+Drawing line to (395.4, 87.1)
+Drawing line to (394.9, 86.4)
+Drawing line to (394.4, 85.8)
+Drawing line to (392.4, 86.5)
+Drawing line to (392.2, 87.4)
+Drawing line to (391.9, 88.4)
+Drawing line to (391.7, 89.4)
+Drawing line to (391.4, 90.4)
+Drawing line to (391.2, 91.3)
+Drawing line to (392.2, 90.0)
+Drawing line to (393.3, 88.6)
+Drawing line to (394.4, 87.2)
+Drawing line to (395.5, 85.9)
+Drawing line to (396.6, 84.5)
+Drawing line to (396.9, 83.4)
+Drawing line to (397.2, 82.4)
+Drawing line to (397.5, 81.3)
+Drawing line to (397.2, 81.8)
+Drawing line to (397.5, 84.0)
+Drawing line to (397.8, 86.3)
+Drawing line to (398.0, 88.5)
+Drawing line to (395.9, 87.7)
+Path 25: Total drawing distance: 31.2 units
+Raising pen
+Path 26: Moving to start position (411.5, 80.6)
+Lowering pen
+Drawing line to (411.5, 80.6)
+Drawing line to (411.6, 80.5)
+Drawing line to (411.6, 80.4)
+Drawing line to (411.7, 80.6)
+Drawing line to (411.5, 80.6)
+Path 26: Total drawing distance: 0.5 units
+Raising pen
+Path 27: Moving to start position (410.9, 86.4)
+Lowering pen
+Drawing line to (411.0, 87.4)
+Drawing line to (411.1, 88.5)
+Drawing line to (411.2, 89.5)
+Drawing line to (411.3, 90.5)
+Drawing line to (411.3, 91.5)
+Drawing line to (410.9, 86.4)
+Path 27: Total drawing distance: 10.3 units
+Raising pen
+Path 28: Moving to start position (424.6, 92.7)
+Lowering pen
+Drawing line to (425.0, 91.6)
+Drawing line to (425.5, 90.6)
+Drawing line to (426.0, 89.5)
+Drawing line to (426.4, 88.5)
+Drawing line to (426.9, 87.4)
+Drawing line to (427.4, 88.6)
+Drawing line to (427.9, 89.9)
+Drawing line to (428.4, 91.1)
+Drawing line to (428.9, 90.6)
+Drawing line to (429.3, 90.2)
+Drawing line to (429.8, 89.7)
+Drawing line to (430.2, 89.3)
+Drawing line to (430.6, 88.8)
+Drawing line to (431.1, 88.4)
+Drawing line to (431.5, 87.9)
+Drawing line to (431.9, 88.5)
+Drawing line to (432.3, 89.2)
+Drawing line to (432.6, 89.8)
+Drawing line to (433.0, 90.5)
+Drawing line to (433.3, 91.1)
+Drawing line to (433.7, 91.8)
+Drawing line to (434.0, 92.4)
+Drawing line to (424.6, 92.7)
+Path 28: Total drawing distance: 28.8 units
+Raising pen
+Path 29: Moving to start position (462.4, 77.9)
+Lowering pen
+Drawing line to (462.1, 80.4)
+Drawing line to (461.8, 82.8)
+Drawing line to (461.5, 85.3)
+Drawing line to (461.2, 87.7)
+Drawing line to (460.8, 90.2)
+Drawing line to (462.4, 77.9)
+Path 29: Total drawing distance: 24.7 units
+Raising pen
+Path 30: Moving to start position (479.1, 86.2)
+Lowering pen
+Drawing line to (478.7, 85.5)
+Drawing line to (477.2, 85.9)
+Drawing line to (476.9, 87.0)
+Drawing line to (476.7, 88.0)
+Drawing line to (476.5, 89.1)
+Drawing line to (476.2, 90.2)
+Drawing line to (476.0, 91.2)
+Drawing line to (476.5, 91.6)
+Drawing line to (477.0, 90.5)
+Drawing line to (477.4, 89.5)
+Drawing line to (477.9, 88.5)
+Drawing line to (478.3, 87.4)
+Drawing line to (478.8, 86.4)
+Drawing line to (479.1, 86.2)
+Path 30: Total drawing distance: 14.4 units
+Raising pen
+Path 31: Moving to start position (487.4, 86.9)
+Lowering pen
+Drawing line to (488.5, 86.7)
+Drawing line to (489.6, 86.5)
+Drawing line to (490.8, 86.3)
+Drawing line to (491.9, 86.2)
+Drawing line to (493.0, 86.0)
+Drawing line to (494.2, 85.8)
+Drawing line to (495.3, 85.6)
+Drawing line to (487.4, 86.9)
+Path 31: Total drawing distance: 16.0 units
+Raising pen
+Path 32: Moving to start position (491.4, 79.4)
+Lowering pen
+Drawing line to (491.4, 81.6)
+Drawing line to (491.5, 83.7)
+Drawing line to (491.5, 85.9)
+Drawing line to (491.5, 88.1)
+Drawing line to (491.6, 90.3)
+Drawing line to (491.4, 79.4)
+Path 32: Total drawing distance: 21.8 units
+Raising pen
+Path 33: Moving to start position (501.3, 86.9)
+Lowering pen
+Drawing line to (502.4, 86.7)
+Drawing line to (503.5, 86.5)
+Drawing line to (504.6, 86.3)
+Drawing line to (505.8, 86.2)
+Drawing line to (506.9, 86.0)
+Drawing line to (508.0, 85.8)
+Drawing line to (509.1, 85.6)
+Drawing line to (501.3, 86.9)
+Path 33: Total drawing distance: 16.0 units
+Raising pen
+Path 34: Moving to start position (505.2, 79.4)
+Lowering pen
+Drawing line to (505.3, 81.6)
+Drawing line to (505.3, 83.7)
+Drawing line to (505.4, 85.9)
+Drawing line to (505.4, 88.1)
+Drawing line to (505.4, 90.3)
+Drawing line to (505.2, 79.4)
+Path 34: Total drawing distance: 21.8 units
+Raising pen
+Path 35: Moving to start position (516.4, 80.6)
+Lowering pen
+Drawing line to (516.4, 80.6)
+Drawing line to (516.5, 80.5)
+Drawing line to (516.5, 80.4)
+Drawing line to (516.6, 80.6)
+Drawing line to (516.4, 80.6)
+Path 35: Total drawing distance: 0.5 units
+Raising pen
+Path 36: Moving to start position (515.8, 86.4)
+Lowering pen
+Drawing line to (515.9, 87.4)
+Drawing line to (516.0, 88.5)
+Drawing line to (516.1, 89.5)
+Drawing line to (516.1, 90.5)
+Drawing line to (516.2, 91.5)
+Drawing line to (515.8, 86.4)
+Path 36: Total drawing distance: 10.3 units
+Raising pen
+Path 37: Moving to start position (529.8, 92.7)
+Lowering pen
+Drawing line to (530.5, 91.6)
+Drawing line to (531.1, 90.4)
+Drawing line to (531.8, 89.2)
+Drawing line to (532.5, 88.1)
+Drawing line to (533.1, 86.9)
+Drawing line to (533.6, 86.3)
+Drawing line to (534.2, 87.2)
+Drawing line to (534.7, 88.1)
+Drawing line to (535.2, 88.9)
+Drawing line to (535.7, 89.8)
+Drawing line to (536.2, 90.7)
+Drawing line to (529.8, 92.7)
+Path 37: Total drawing distance: 19.2 units
+Raising pen
+-------------------
+Plotting Statistics:
+Total paths: 38
+Total drawing distance: 657.2 units
+Total pen movements: 76
+Estimated plotting time: 76 seconds
+-------------------
+Final Statistics:
+Estimated Time: 76
+Pen Movements: 76
+Total Distance: 657.2119688625073
+Total Paths: 38

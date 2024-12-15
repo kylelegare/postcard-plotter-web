@@ -149,11 +149,11 @@ class FontParser:
                             for path_idx, path in enumerate(paths):
                                 scaled_path = []
                                 for x, y in path:
-                                    # Scale paths to fit within standard postcard size (6" x 4")
-                                    # Use a base size of 30 units for better proportions and positioning
-                                    scale_factor = 30 / units_per_em
+                                    # Scale paths to fit within normalized coordinate system (0-100 units)
+                                    # Use a smaller base size for more efficient plotting
+                                    scale_factor = 20 / units_per_em
                                     scaled_x = (x * scale_factor)
-                                    scaled_y = 30 - (y * scale_factor)  # Flip y-coordinate for correct orientation
+                                    scaled_y = 20 - (y * scale_factor)  # Flip y-coordinate for correct orientation
                                     scaled_path.append((scaled_x, scaled_y))
                                     logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
                                 # Validate path points and deduplicate
@@ -218,19 +218,19 @@ class FontParser:
             return []
             
         paths = []
-        margin = 50  # 0.5-inch margin at 100 DPI
+        margin = 20  # Reduced margin for better coordinate range
         x_pos = margin
-        y_pos = margin + font_size  # Start y position at margin plus font size
+        y_pos = margin + (font_size * 0.8)  # Adjusted start position
         
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
-        # Calculate scale based on postcard dimensions (6" × 4" at 100 DPI)
-        base_size = 15  # Further reduced base size for better proportions
-        scale = (font_size / 12) * (base_size / 30)  # Scale relative to reduced base size
+        # Calculate scale based on normalized coordinate system (0-100 units)
+        base_size = 10  # Small base size for efficient coordinate range
+        scale = (font_size / 12) * (base_size / 20)  # Scale relative to normalized range
         char_width = base_size * scale  # Character width
         char_height = base_size * scale
-        spacing = (base_size / 3) * scale  # Reduced spacing between characters
-        max_width = 600 - (margin * 2)  # Max width with margins (100 DPI)
+        spacing = (base_size / 4) * scale  # Compact spacing between characters
+        max_width = 100 - (margin * 2)  # Max width in normalized units
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
         
