@@ -10,46 +10,36 @@ class FontParser:
         self.load_font()
     
     def load_font(self):
-        """Load and parse the custom single-stroke font file"""
+        """Initialize with basic character shapes for testing"""
         try:
-            logger.debug("Loading font file")
-            logger.info("Using development fallback for font paths")
+            logger.debug("Loading development font")
             
             # Initialize font data dictionary
             self.font_data = {}
             
-            # Create simple line patterns for testing
-            # Uppercase letters (A-Z) - vertical strokes
-            for char in range(65, 91):
-                char_str = chr(char)
-                # Create an "L" shape for each uppercase letter
-                self.font_data[char_str] = [
-                    [(0, 0), (0, 40)],  # Vertical line
-                    [(0, 40), (20, 40)]  # Horizontal line at top
-                ]
+            # Create simple character shapes
+            # Each character is represented by a series of paths that form its shape
             
-            # Lowercase letters (a-z) - horizontal strokes
-            for char in range(97, 123):
-                char_str = chr(char)
-                # Create a simple horizontal line with a small vertical at start
-                self.font_data[char_str] = [
-                    [(0, 10), (0, 25)],  # Small vertical line
-                    [(0, 25), (20, 25)]  # Horizontal line
-                ]
+            # Letter 'A'
+            self.font_data['A'] = [
+                [(0, 40), (20, 0), (40, 40)],  # Outer lines
+                [(10, 20), (30, 20)]  # Cross bar
+            ]
             
-            # Numbers (0-9) - box shapes
-            for char in range(48, 58):
-                char_str = chr(char)
-                self.font_data[char_str] = [
-                    [(0, 0), (20, 0), (20, 40), (0, 40), (0, 0)]  # Box shape
-                ]
-            
-            # Special characters
-            self.font_data[' '] = []  # Space - empty path
-            self.font_data['.'] = [[(0, 0), (0, 2)]]  # Period - tiny vertical line
-            self.font_data[','] = [[(0, -5), (0, 2)]]  # Comma - tiny vertical line with tail
-            self.font_data['!'] = [[(0, 0), (0, 30)], [(0, 35), (0, 40)]]  # Exclamation mark
-            self.font_data['?'] = [[(0, 40), (20, 40), (20, 20), (10, 20)], [(10, 0), (10, 5)]]  # Question mark
+            # Default shape for other characters - simple rectangle
+            for char in range(32, 127):  # ASCII printable chars
+                if chr(char) not in self.font_data:
+                    char_str = chr(char)
+                    if char_str.isalnum():  # Letters and numbers
+                        self.font_data[char_str] = [
+                            [(0, 0), (30, 0), (30, 40), (0, 40), (0, 0)]  # Rectangle
+                        ]
+                    elif char_str == ' ':
+                        self.font_data[char_str] = []  # Empty path for space
+                    else:
+                        self.font_data[char_str] = [
+                            [(0, 0), (20, 0), (20, 20), (0, 20), (0, 0)]  # Smaller rectangle for symbols
+                        ]
             
             logger.info(f"Created development font with {len(self.font_data)} characters")
             
