@@ -72,16 +72,7 @@ class PostcardPreview {
     }
     
     drawPaths(data) {
-        // Draw postcard background
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillRect(0, 0, this.width, this.height);
-        
-        // Draw subtle postcard border
-        this.ctx.strokeStyle = '#ddd';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
-        
-        // Clear any existing content
+        // Clear canvas
         this.ctx.clearRect(0, 0, this.width, this.height);
         
         // Draw postcard background
@@ -94,9 +85,11 @@ class PostcardPreview {
         this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
         
         if (!data || !data.plotPaths || !data.plotPaths.length) {
-            console.log('No plot paths available');
+            console.log('No plot paths received:', data);
             return;
         }
+        
+        console.log('Received plot paths:', data.plotPaths.length);
         
         this.ctx.save();
         

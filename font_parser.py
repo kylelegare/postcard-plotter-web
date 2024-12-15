@@ -123,6 +123,10 @@ class FontParser:
         Returns:
             List of paths, where each path is a list of points
         """
+        if not text:
+            logger.debug("Empty text received, returning empty paths list")
+            return []
+            
         paths = []
         margin = 100  # 1-inch margin at 100 DPI
         x_pos = margin

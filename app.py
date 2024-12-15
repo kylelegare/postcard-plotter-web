@@ -52,11 +52,18 @@ def handle_text_update(data):
     # Update font parser mistake frequency
     font_parser.set_mistake_frequency(mistake_frequency)
     
-    # Generate preview data for both visual display and plotter paths
+    # Generate plot paths
+    plot_paths = font_parser.get_text_paths(text, font_size)
+    logger.debug(f"Generated {len(plot_paths)} paths for text")
+    
+    if plot_paths:
+        logger.debug(f"First path sample: {plot_paths[0]}")
+    
+    # Generate preview data
     preview_data = {
         'text': text,
         'fontSize': font_size,
-        'plotPaths': font_parser.get_text_paths(text, font_size)
+        'plotPaths': plot_paths
     }
     logger.debug(f"Sending preview data with {len(preview_data['plotPaths'])} paths")
     
