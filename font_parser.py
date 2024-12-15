@@ -125,7 +125,7 @@ class FontParser:
         y_pos = margin
         
         # Track mistake positions for strike-through
-        mistake_ranges = []  # List of (start_x, width) for mistakes
+        mistake_positions = []  # List of (x, y, width) for mistakes
         
         # Base size is 40 units, scale everything relative to requested font size
         scale = font_size / 40
@@ -134,15 +134,21 @@ class FontParser:
         max_width = 600 - (margin * 2)  # Max width with margins
         
         logger.debug(f"Converting text: '{text}' at font size {font_size} (scale: {scale})")
+        logger.debug(f"Mistake frequency set to: {self.mistake_frequency}")
         
         # Split text into words for wrapping
         words = text.split()
         current_line = []
         current_width = 0
+        line_x = x_pos
         
         for word in words:
             # Generate potential mistake
             modified_word, is_mistake = self.generate_mistake(word)
+            logger.debug(f"Word: {word}, Modified: {modified_word}, Is mistake: {is_mistake}")
+            
+            # Calculate word width
+            word_width = len(modified_word) * char_width * 1.2
             
             # Add word to current line
             test_line = (current_line + [modified_word]) if current_line else [modified_word]
@@ -153,6 +159,7 @@ class FontParser:
                 line_x = x_pos
                 for word_to_render in current_line:
                     if word_to_render != ' ':
+                        word_start_x = line_x
                         # Get character's stroke paths
                         for char in word_to_render:
                             char_paths = self.font_data.get(char, self.font_data['I'])
@@ -167,6 +174,16 @@ class FontParser:
                                     })
                                 paths.append(path)
                             line_x += char_width * 1.2
+                        
+                        # If this word was a mistake, record its position
+                        if word_to_render == modified_word and is_mistake:
+                            mistake_positions.append({
+                                'x': word_start_x,
+                                'y': y_pos,
+                                'width': word_width
+                            })
+                            logger.debug(f"Added mistake position for word: {word_to_render}")
+                    
                     line_x += char_width * 0.5  # Space between words
                 
                 # Move to next line
@@ -197,13 +214,15 @@ class FontParser:
 
 
         # Add strike-through paths for mistakes
-        for mistake in mistake_ranges:
-            # Create diagonal strike-through
+        for mistake in mistake_positions:
+            # Create strike-through line (slightly diagonal for natural look)
+            strike_y = mistake['y'] + (char_height * 0.4)  # Strike through middle of text
             strike_path = [
-                {'x': mistake['x'], 'y': mistake['y'] + (char_height * 0.3)},
-                {'x': mistake['x'] + mistake['width'], 'y': mistake['y'] + (char_height * 0.7)}
+                {'x': mistake['x'], 'y': strike_y},
+                {'x': mistake['x'] + mistake['width'], 'y': strike_y + (char_height * 0.2)}
             ]
             paths.append(strike_path)
+            logger.debug(f"Added strike-through at y={strike_y} with width={mistake['width']}")
         
         logger.debug(f"Generated {len(paths)} paths ({len(mistake_ranges)} mistakes)")
         return paths
