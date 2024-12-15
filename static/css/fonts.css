@@ -1,6 +1,7 @@
 @font-face {
     font-family: 'PremiumUltra';
-    src: url('/static/fonts/PremiumUltra54.ttf') format('truetype');
+    src: url('../fonts/PremiumUltra54.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
+    font-display: swap;
 }

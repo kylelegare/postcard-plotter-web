@@ -9,10 +9,17 @@ from font_parser import FontParser
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
-app = Flask(__name__)
+# Initialize Flask app with explicit static folder config
+app = Flask(__name__, static_url_path='/static', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
 socketio = SocketIO(app)
+
+# Add logging for static file requests
+@app.after_request
+def after_request(response):
+    if '/static/' in request.path:
+        app.logger.debug(f'Static file requested: {request.path}')
+    return response
 
 # Initialize AxiDraw controller and font parser
 axidraw = AxiDrawController()
