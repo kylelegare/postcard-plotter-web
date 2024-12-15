@@ -39,14 +39,20 @@ def handle_text_update(data):
     text = data.get('text', '')
     font_size = data.get('fontSize', 12)
     
+    logger.debug(f"Received text update: text='{text}', fontSize={font_size}")
+    
     # Process text with font parser
     text_paths = font_parser.get_text_paths(text, font_size)
+    logger.debug(f"Generated paths: {text_paths}")
     
-    # Send updated preview data back to client
-    socketio.emit('preview_update', {
+    preview_data = {
         'paths': text_paths,
         'bounds': font_parser.get_text_bounds(text, font_size)
-    })
+    }
+    logger.debug(f"Sending preview data: {preview_data}")
+    
+    # Send updated preview data back to client
+    socketio.emit('preview_update', preview_data)
 
 @app.route('/api/plot', methods=['POST'])
 def plot_text():

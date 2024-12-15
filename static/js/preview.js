@@ -44,6 +44,8 @@ class PostcardPreview {
     }
     
     drawPaths(paths) {
+        console.log('Drawing paths:', paths);
+        
         // Clear canvas
         this.ctx.fillStyle = 'white';
         this.ctx.fillRect(0, 0, this.width, this.height);
@@ -52,20 +54,26 @@ class PostcardPreview {
         this.drawGrid();
         
         if (!paths || paths.length === 0) {
+            console.log('No paths to draw');
             return;
         }
         
         this.ctx.save();
-        this.ctx.translate(50, 100);  // Start higher up for better visibility
+        
+        // Add margin and center vertically
+        this.ctx.translate(50, 50);
         
         // Draw text paths
-        this.ctx.strokeStyle = 'black';
-        this.ctx.lineWidth = 2;  // Thicker lines for better visibility
-        
-        paths.forEach(path => {
+        paths.forEach((path, pathIndex) => {
             if (!path || path.length === 0) return;
             
+            console.log(`Drawing path ${pathIndex}:`, path);
+            
+            // Draw the path
             this.ctx.beginPath();
+            this.ctx.strokeStyle = 'black';
+            this.ctx.lineWidth = 1;
+            
             path.forEach((point, index) => {
                 if (index === 0) {
                     this.ctx.moveTo(point.x, point.y);
@@ -75,12 +83,22 @@ class PostcardPreview {
             });
             this.ctx.stroke();
             
-            // Draw points for debugging
-            path.forEach(point => {
-                this.ctx.fillStyle = 'red';
+            // Draw points and coordinates for debugging
+            path.forEach((point, index) => {
+                // Draw point
+                this.ctx.fillStyle = index === 0 ? 'green' : 'red';
                 this.ctx.beginPath();
                 this.ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
                 this.ctx.fill();
+                
+                // Draw coordinates
+                this.ctx.fillStyle = 'blue';
+                this.ctx.font = '8px monospace';
+                this.ctx.fillText(
+                    `(${Math.round(point.x)},${Math.round(point.y)})`,
+                    point.x + 5,
+                    point.y - 5
+                );
             });
         });
         

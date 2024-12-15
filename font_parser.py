@@ -64,32 +64,40 @@ class FontParser:
             List of paths, where each path is a list of points
         """
         paths = []
-        x_pos = 0  # Starting at origin, canvas will handle margins
-        y_pos = 0  # Starting at origin, canvas will handle centering
+        x_pos = 0
+        y_pos = 0
         
-        scale = font_size / 40  # Scale relative to base font size
+        # Base size is 40 units, scale everything relative to requested font size
+        scale = font_size / 40
+        char_width = 30 * scale
+        char_height = 40 * scale
+        
+        logger.debug(f"Converting text: '{text}' at font size {font_size} (scale: {scale})")
         
         for char in text:
             if char == '\n':
                 x_pos = 0
-                y_pos += font_size * 1.5
+                y_pos += char_height * 1.5
                 continue
                 
-            if char in self.font_data:
-                char_paths = self.font_data[char]
-                for stroke in char_paths:
-                    path = []
-                    for x, y in stroke:
-                        path.append({
-                            'x': x_pos + x * scale,
-                            'y': y_pos + y * scale
-                        })
-                    paths.append(path)
-                x_pos += (self.get_char_width(char) + 5) * scale  # Add consistent spacing
-            else:
-                # For unsupported characters, add space
-                x_pos += 15 * scale
+            # For every character, create a simple box path
+            box_path = []
+            if char != ' ':
+                # Create a box shape for the character
+                box_path = [
+                    {'x': x_pos, 'y': y_pos},  # Top left
+                    {'x': x_pos + char_width, 'y': y_pos},  # Top right
+                    {'x': x_pos + char_width, 'y': y_pos + char_height},  # Bottom right
+                    {'x': x_pos, 'y': y_pos + char_height},  # Bottom left
+                    {'x': x_pos, 'y': y_pos}  # Back to start
+                ]
+                paths.append(box_path)
+                logger.debug(f"Generated box path for '{char}' at position ({x_pos}, {y_pos})")
+            
+            # Move to next character position
+            x_pos += char_width * 1.2  # Add 20% spacing between characters
         
+        logger.debug(f"Generated {len(paths)} paths")
         return paths
     
     def get_char_width(self, char: str) -> float:
