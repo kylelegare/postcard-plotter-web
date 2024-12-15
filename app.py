@@ -56,8 +56,12 @@ def handle_text_update(data):
     plot_paths = font_parser.get_text_paths(text, font_size)
     logger.debug(f"Generated {len(plot_paths)} paths for text")
     
-    if plot_paths:
-        logger.debug(f"First path sample: {plot_paths[0]}")
+    if not plot_paths:
+        logger.debug("No paths generated")
+    else:
+        logger.debug(f"Sample of first path: {plot_paths[0]}")
+        if len(plot_paths) > 1:
+            logger.debug(f"Sample of second path: {plot_paths[1]}")
     
     # Generate preview data
     preview_data = {
@@ -65,10 +69,17 @@ def handle_text_update(data):
         'fontSize': font_size,
         'plotPaths': plot_paths
     }
-    logger.debug(f"Sending preview data with {len(preview_data['plotPaths'])} paths")
+    
+    # Log the size of the data being sent
+    import json
+    preview_data_str = json.dumps(preview_data)
+    logger.debug(f"Preview data size: {len(preview_data_str)} bytes")
+    logger.debug(f"Number of paths: {len(plot_paths)}")
     
     # Send updated preview data back to client
+    logger.debug("Emitting preview_update event")
     socketio.emit('preview_update', preview_data)
+    logger.debug("Finished emitting preview_update event")
 
 @app.route('/api/plot', methods=['POST'])
 def plot_text():

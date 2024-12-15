@@ -67,8 +67,22 @@ class PostcardPreview {
     }
     
     setupWebSocket() {
+        this.socket.on('connect', () => {
+            console.log('Socket connected');
+        });
+
         this.socket.on('preview_update', (data) => {
-            this.drawPaths(data.plotPaths);
+            console.log('Received preview update:', data);
+            if (data && data.plotPaths) {
+                console.log(`Processing ${data.plotPaths.length} paths`);
+                this.drawPaths(data);
+            } else {
+                console.log('No valid plot paths in preview update');
+            }
+        });
+
+        this.socket.on('disconnect', () => {
+            console.log('Socket disconnected');
         });
     }
     
@@ -95,6 +109,8 @@ class PostcardPreview {
     }
     
     drawPaths(data) {
+        console.log('Drawing paths:', data.plotPaths);
+        
         // Clear canvas and set up initial state
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.save();
@@ -122,6 +138,8 @@ class PostcardPreview {
         
         // Draw each path
         data.plotPaths.forEach((path, index) => {
+            console.log(`Drawing path ${index}:`, path);
+            
             if (!path || path.length < 2) {
                 console.log(`Skipping invalid path ${index}:`, path);
                 return;
