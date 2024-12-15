@@ -235,7 +235,7 @@ class FontParser:
         letter_spacing = (base_size / 8) * scale  # Spacing between letters
         max_width = 30 - (margin * 2)  # Available width for text
         
-        logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
+        logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, word_spacing={word_spacing}, letter_spacing={letter_spacing}")
         
         logger.debug(f"Converting text: '{text}' at font size {font_size}")
         logger.debug(f"Scale: {scale}, Mistake frequency: {self.mistake_frequency}")
@@ -315,7 +315,7 @@ class FontParser:
             for w in current_line:
                 # Add word spacing
                 if render_x > line_start_x:
-                    render_x += spacing * 2  # Double spacing between words
+                    render_x += word_spacing  # Consistent word spacing
                 
                 for char in w:
                     # Get character paths, fallback to box shape if not found
@@ -342,7 +342,7 @@ class FontParser:
                             paths.append(path)
                     
                     # Move to next character position
-                    render_x += char_width + (spacing * 0.5)  # Add spacing between characters
+                    render_x += char_width + letter_spacing  # Consistent letter spacing
         
         # Add strike-through for mistakes
         for mistake in mistakes_to_strike:
