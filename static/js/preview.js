@@ -8,8 +8,31 @@ class PostcardPreview {
         this.width = 600;
         this.height = 400;
         
+        // Set canvas dimensions
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        
+        // Enable high DPI rendering
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.canvas.getBoundingClientRect();
+        
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+        
         this.setupEventListeners();
         this.setupWebSocket();
+        
+        // Initial clear
+        this.clear();
+    }
+    
+    clear() {
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        this.ctx.strokeStyle = '#ddd';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
     }
     
     setupEventListeners() {
@@ -72,8 +95,9 @@ class PostcardPreview {
     }
     
     drawPaths(data) {
-        // Clear canvas
+        // Clear canvas and set up initial state
         this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.save();
         
         // Draw postcard background
         this.ctx.fillStyle = 'white';
@@ -86,36 +110,39 @@ class PostcardPreview {
         
         if (!data || !data.plotPaths || !data.plotPaths.length) {
             console.log('No plot paths received:', data);
+            this.ctx.restore();
             return;
         }
         
-        console.log('Received plot paths:', data.plotPaths.length);
-        
-        this.ctx.save();
-        
         // Set up path rendering with a pen-like appearance
         this.ctx.strokeStyle = '#1a1a1a';
-        this.ctx.lineWidth = 1;
+        this.ctx.lineWidth = 2;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
-        
-        console.log(`Rendering ${data.plotPaths.length} paths`);
         
         // Draw each path
         data.plotPaths.forEach((path, index) => {
             if (!path || path.length < 2) {
-                console.log(`Skipping invalid path ${index}`);
+                console.log(`Skipping invalid path ${index}:`, path);
                 return;
             }
             
+            // Draw path
             this.ctx.beginPath();
-            this.ctx.moveTo(path[0].x, path[0].y);
             
-            // Draw the rest of the points
-            for (let i = 1; i < path.length; i++) {
-                this.ctx.lineTo(path[i].x, path[i].y);
+            // Move to first point
+            if (path[0]) {
+                this.ctx.moveTo(path[0].x, path[0].y);
             }
             
+            // Draw through remaining points
+            for (let i = 1; i < path.length; i++) {
+                if (path[i]) {
+                    this.ctx.lineTo(path[i].x, path[i].y);
+                }
+            }
+            
+            // Stroke the path
             this.ctx.stroke();
         });
         
