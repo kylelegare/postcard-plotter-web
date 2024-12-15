@@ -1,8 +1,13 @@
 [project]
-name = "repl-nix-postcard-plotter-web"
+name = "postcard-plotter-web"
 version = "0.1.0"
-description = "Add your description here"
+description = "A web interface for controlling AxiDraw Mini to write text on postcards with custom font support"
 requires-python = ">=3.11"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
 dependencies = [
     "email-validator>=2.2.0",
     "flask>=3.1.0",
