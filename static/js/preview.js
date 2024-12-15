@@ -44,36 +44,27 @@ class PostcardPreview {
     }
     
     drawPaths(paths) {
-        console.log('Drawing paths:', paths);
-        
-        // Clear canvas
+        // Clear canvas with white background
         this.ctx.fillStyle = 'white';
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        // Add grid for debugging
-        this.drawGrid();
-        
         if (!paths || paths.length === 0) {
-            console.log('No paths to draw');
             return;
         }
         
         this.ctx.save();
         
-        // Add margin and center vertically
-        this.ctx.translate(50, 50);
+        // Position text with comfortable margins
+        this.ctx.translate(50, 100);
         
-        // Draw text paths
-        paths.forEach((path, pathIndex) => {
+        // Draw text paths with a pen-like appearance
+        this.ctx.strokeStyle = '#000';  // Black ink color
+        this.ctx.lineWidth = 2;  // Slightly thicker for better visibility
+        
+        paths.forEach(path => {
             if (!path || path.length === 0) return;
             
-            console.log(`Drawing path ${pathIndex}:`, path);
-            
-            // Draw the path
             this.ctx.beginPath();
-            this.ctx.strokeStyle = 'black';
-            this.ctx.lineWidth = 1;
-            
             path.forEach((point, index) => {
                 if (index === 0) {
                     this.ctx.moveTo(point.x, point.y);
@@ -82,49 +73,9 @@ class PostcardPreview {
                 }
             });
             this.ctx.stroke();
-            
-            // Draw points and coordinates for debugging
-            path.forEach((point, index) => {
-                // Draw point
-                this.ctx.fillStyle = index === 0 ? 'green' : 'red';
-                this.ctx.beginPath();
-                this.ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                // Draw coordinates
-                this.ctx.fillStyle = 'blue';
-                this.ctx.font = '8px monospace';
-                this.ctx.fillText(
-                    `(${Math.round(point.x)},${Math.round(point.y)})`,
-                    point.x + 5,
-                    point.y - 5
-                );
-            });
         });
         
         this.ctx.restore();
-    }
-    
-    drawGrid() {
-        // Draw light grid for reference
-        this.ctx.strokeStyle = '#eee';
-        this.ctx.lineWidth = 1;
-        
-        // Vertical lines
-        for (let x = 0; x < this.width; x += 50) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x, 0);
-            this.ctx.lineTo(x, this.height);
-            this.ctx.stroke();
-        }
-        
-        // Horizontal lines
-        for (let y = 0; y < this.height; y += 50) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, y);
-            this.ctx.lineTo(this.width, y);
-            this.ctx.stroke();
-        }
     }
 }
 
