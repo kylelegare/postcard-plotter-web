@@ -1,44 +1,8 @@
 class PostcardPreview {
-// Font loading observer
-class FontLoadObserver {
-    static async waitForFont(fontFamily) {
-        const font = new FontFace(fontFamily, `url('/static/fonts/PremiumUltra54.ttf')`);
-        try {
-            await font.load();
-            document.fonts.add(font);
-            return true;
-        } catch (error) {
-            console.error('Font loading error:', error);
-            return false;
-        }
-    }
-}
-
     constructor() {
         this.canvas = document.getElementById('previewCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.socket = io();
-        
-        // Setup event listeners and socket handlers immediately
-        this.setupEventListeners();
-        this.setupWebSocket();
-        
-        // Setup canvas first
-        this.setupCanvas();
-        
-        // Wait for font to load before initializing canvas
-        FontLoadObserver.waitForFont('PremiumUltra').then(() => {
-            console.log('PremiumUltra font loaded');
-            // Trigger initial preview
-            this.updatePreview();
-        }).catch(err => {
-            console.warn('Font loading failed, falling back to system font:', err);
-            // Still trigger preview even with fallback font
-            this.updatePreview();
-        });
-    }
-    
-    setupCanvas() {
         
         // Postcard dimensions (6" × 4" at 100 DPI)
         this.width = 600;
@@ -57,6 +21,9 @@ class FontLoadObserver {
         
         // Scale all drawing operations by the dpr
         this.ctx.scale(dpr, dpr);
+        
+        this.setupEventListeners();
+        this.setupWebSocket();
         
         // Initial clear
         this.clear();
