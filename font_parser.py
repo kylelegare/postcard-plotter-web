@@ -54,258 +54,117 @@ class FontParser:
         return modified, True
     
     def load_font(self):
-        """Initialize with basic character shapes for testing"""
+        """Load font from TTF file and extract glyph paths"""
         try:
-            logger.debug("Loading development font")
+            from fontTools.ttLib import TTFont
+            from fontTools.pens.recordingPen import RecordingPen
             
+            logger.debug("Loading PremiumUltra font")
+            font_path = "static/fonts/PremiumUltra54SL.ttf"
+            
+            # Load the font file
+            logger.debug(f"Attempting to load font from: {font_path}")
+            ttfont = TTFont(font_path)
+            
+            # Get required tables
+            glyf = ttfont.get('glyf')
+            if glyf is None:
+                logger.error("Font is missing required 'glyf' table")
+                raise ValueError("Invalid font file: missing glyph data")
+                
             # Initialize font data dictionary
             self.font_data = {}
             
-            # Create simple character shapes
-            # Each character is represented by a series of paths that form its shape
-            # All characters use a 40-unit height
+            # Get the cmap table for character to glyph mapping
+            cmap = ttfont.getBestCmap()
+            if cmap is None:
+                logger.error("Could not find suitable cmap table in font")
+                raise ValueError("Invalid font file: no character mapping found")
+                
+            units_per_em = ttfont['head'].unitsPerEm
+            logger.debug(f"Font loaded successfully. Units per em: {units_per_em}")
             
-            # Uppercase Letters
-            # Letter 'A'
-            self.font_data['A'] = [
-                [(0, 40), (20, 0), (40, 40)],  # Outer lines
-                [(10, 25), (30, 25)]  # Cross bar
-            ]
-            
-            # Letter 'B'
-            self.font_data['B'] = [
-                [(0, 0), (0, 40)],  # Vertical
-                [(0, 0), (20, 0), (25, 5), (25, 15), (20, 20)],  # Top loop
-                [(0, 20), (20, 20), (30, 25), (30, 35), (20, 40), (0, 40)]  # Bottom loop
-            ]
-            
-            # Letter 'C'
-            self.font_data['C'] = [
-                [(30, 5), (20, 0), (10, 0), (0, 10), (0, 30), (10, 40), (20, 40), (30, 35)]
-            ]
-            
-            # Letter 'D'
-            self.font_data['D'] = [
-                [(0, 0), (0, 40)],  # Vertical
-                [(0, 0), (20, 0), (30, 10), (30, 30), (20, 40), (0, 40)]  # Curve
-            ]
-            
-            # Letter 'E'
-            self.font_data['E'] = [
-                [(30, 0), (0, 0), (0, 40), (30, 40)],  # Outline
-                [(0, 20), (20, 20)]  # Middle bar
-            ]
-            
-            # Letter 'F'
-            self.font_data['F'] = [
-                [(0, 40), (0, 0), (30, 0)],  # Vertical and top
-                [(0, 20), (20, 20)]  # Middle bar
-            ]
-            
-            # Letter 'G'
-            self.font_data['G'] = [
-                [(30, 5), (20, 0), (10, 0), (0, 10), (0, 30), (10, 40), (20, 40), (30, 35), (30, 20), (15, 20)]
-            ]
-            
-            # Letter 'H'
-            self.font_data['H'] = [
-                [(0, 0), (0, 40)],  # Left vertical
-                [(0, 20), (30, 20)],  # Middle bar
-                [(30, 0), (30, 40)]  # Right vertical
-            ]
-            
-            # Letter 'I'
-            self.font_data['I'] = [
-                [(0, 0), (20, 0)],  # Top bar
-                [(10, 0), (10, 40)],  # Vertical line
-                [(0, 40), (20, 40)]  # Bottom bar
-            ]
-            
-            # Letter 'J'
-            self.font_data['J'] = [
-                [(20, 0), (20, 30), (15, 38), (5, 38), (0, 30)]
-            ]
-            
-            # Letter 'K'
-            self.font_data['K'] = [
-                [(0, 0), (0, 40)],  # Vertical
-                [(0, 20), (30, 0)],  # Upper diagonal
-                [(0, 20), (30, 40)]  # Lower diagonal
-            ]
-            
-            # Letter 'L'
-            self.font_data['L'] = [
-                [(0, 0), (0, 40), (30, 40)]
-            ]
-            
-            # Letter 'M'
-            self.font_data['M'] = [
-                [(0, 40), (0, 0), (20, 20), (40, 0), (40, 40)]
-            ]
-            
-            # Letter 'N'
-            self.font_data['N'] = [
-                [(0, 40), (0, 0), (30, 40), (30, 0)]
-            ]
-            
-            # Letter 'O'
-            self.font_data['O'] = [
-                [(10, 0), (20, 0), (30, 10), (30, 30), (20, 40), (10, 40), (0, 30), (0, 10), (10, 0)]
-            ]
-            
-            # Letter 'P'
-            self.font_data['P'] = [
-                [(0, 40), (0, 0), (20, 0), (30, 5), (30, 15), (20, 20), (0, 20)]
-            ]
-            
-            # Letter 'Q'
-            self.font_data['Q'] = [
-                [(10, 0), (20, 0), (30, 10), (30, 30), (20, 40), (10, 40), (0, 30), (0, 10), (10, 0)],
-                [(15, 25), (35, 45)]  # Tail
-            ]
-            
-            # Letter 'R'
-            self.font_data['R'] = [
-                [(0, 40), (0, 0), (20, 0), (30, 5), (30, 15), (20, 20), (0, 20)],
-                [(15, 20), (30, 40)]  # Leg
-            ]
-            
-            # Letter 'S'
-            self.font_data['S'] = [
-                [(30, 5), (20, 0), (10, 0), (0, 5), (0, 15), (30, 25), (30, 35), (20, 40), (10, 40), (0, 35)]
-            ]
-            
-            # Letter 'T'
-            self.font_data['T'] = [
-                [(0, 0), (40, 0)],  # Top bar
-                [(20, 0), (20, 40)]  # Vertical line
-            ]
-            
-            # Letter 'U'
-            self.font_data['U'] = [
-                [(0, 0), (0, 30), (10, 40), (20, 40), (30, 30), (30, 0)]
-            ]
-            
-            # Letter 'V'
-            self.font_data['V'] = [
-                [(0, 0), (15, 40), (30, 0)]
-            ]
-            
-            # Letter 'W'
-            self.font_data['W'] = [
-                [(0, 0), (10, 40), (20, 20), (30, 40), (40, 0)]
-            ]
-            
-            # Letter 'X'
-            self.font_data['X'] = [
-                [(0, 0), (30, 40)],
-                [(0, 40), (30, 0)]
-            ]
-            
-            # Letter 'Y'
-            self.font_data['Y'] = [
-                [(0, 0), (15, 20), (30, 0)],
-                [(15, 20), (15, 40)]
-            ]
-            
-            # Letter 'Z'
-            self.font_data['Z'] = [
-                [(0, 0), (30, 0), (0, 40), (30, 40)]
-            ]
-            
-            # Lowercase Letters (smaller height: 30 units)
-            # Letter 'a'
-            self.font_data['a'] = [
-                [(20, 30), (10, 30), (0, 25), (0, 20), (5, 15), (25, 15)],
-                [(25, 15), (25, 30)]
-            ]
-            
-            # Letter 'b'
-            self.font_data['b'] = [
-                [(0, 0), (0, 30)],  # Vertical
-                [(0, 20), (10, 15), (20, 20), (20, 25), (10, 30), (0, 25)]  # Bowl
-            ]
-            
-            # Letter 'c'
-            self.font_data['c'] = [
-                [(20, 17), (10, 15), (0, 20), (0, 25), (10, 30), (20, 28)]
-            ]
-            
-            # Letter 'd'
-            self.font_data['d'] = [
-                [(20, 0), (20, 30)],  # Vertical
-                [(20, 25), (10, 30), (0, 25), (0, 20), (10, 15), (20, 20)]  # Bowl
-            ]
-            
-            # Letter 'e'
-            self.font_data['e'] = [
-                [(0, 23), (20, 23), (20, 20), (10, 15), (0, 20), (0, 25), (10, 30), (20, 28)]
-            ]
-            
-            # Letter 'f'
-            self.font_data['f'] = [
-                [(10, 30), (10, 5), (15, 0), (20, 0)],
-                [(5, 15), (15, 15)]
-            ]
-            
-            # Letter 'g'
-            self.font_data['g'] = [
-                [(20, 15), (20, 35), (15, 40), (5, 40), (0, 35)],
-                [(20, 25), (10, 30), (0, 25), (0, 20), (10, 15), (20, 20)]
-            ]
-            
-            # Letter 'h'
-            self.font_data['h'] = [
-                [(0, 0), (0, 30)],  # Vertical
-                [(0, 20), (10, 15), (20, 20), (20, 30)]  # Arch
-            ]
-            
-            # Letter 'i'
-            self.font_data['i'] = [
-                [(10, 15), (10, 30)],  # Main stroke
-                [(10, 5), (10, 7)]  # Dot
-            ]
-            
-            # Letter 'j'
-            self.font_data['j'] = [
-                [(10, 15), (10, 35), (5, 40), (0, 35)],  # Hook
-                [(10, 5), (10, 7)]  # Dot
-            ]
-            
-            # Common punctuation and numbers
-            # Period
-            self.font_data['.'] = [
-                [(0, 38), (0, 40)]
-            ]
-            
-            # Comma
-            self.font_data[','] = [
-                [(0, 38), (0, 42), (-2, 44)]
-            ]
-            
-            # Space (empty path)
-            self.font_data[' '] = []
-            
-            # Question mark
-            self.font_data['?'] = [
-                [(0, 10), (0, 5), (5, 0), (15, 0), (20, 5), (20, 10), (10, 20), (10, 25)],
-                [(10, 35), (10, 37)]  # Dot
-            ]
-            
-            # Exclamation mark
-            self.font_data['!'] = [
-                [(10, 0), (10, 25)],  # Main stroke
-                [(10, 35), (10, 37)]  # Dot
-            ]
-            
-            # Default shape for unimplemented characters (small rectangle)
+            # Extract paths for each printable character
             for char in range(32, 127):  # ASCII printable chars
-                if chr(char) not in self.font_data:
-                    char_str = chr(char)
-                    # Simple box shape instead of vertical line
-                    self.font_data[char_str] = [
-                        [(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]
-                    ]
+                char_str = chr(char)
+                
+                try:
+                    # Get glyph name for this character
+                    glyph_id = cmap.get(ord(char_str))
+                    if glyph_id is None:
+                        logger.debug(f"No glyph mapping found for character '{char_str}' (ord={ord(char_str)})")
+                        continue
+                    
+                    glyph = glyf[glyph_id]
+                    if glyph is None:
+                        logger.debug(f"Null glyph for character '{char_str}' (id={glyph_id})")
+                        continue
+                    
+                    logger.debug(f"Processing glyph for '{char_str}' (id={glyph_id}, contours={glyph.numberOfContours})")
+                    
+                    # Use RecordingPen to capture the glyph's path
+                    pen = RecordingPen()
+                    if glyph.numberOfContours > 0:  # Skip empty glyphs
+                        glyph.draw(pen, glyf)
+                        logger.debug(f"Captured {len(pen.value)} path commands for '{char_str}'")
+                    
+                    # Convert pen recordings to our path format
+                        paths = []
+                        current_path = []
+                        
+                        for cmd, args in pen.value:
+                            try:
+                                if cmd == 'moveTo':
+                                    if current_path:
+                                        paths.append(current_path)
+                                    current_path = [tuple(args[0])]
+                                elif cmd == 'lineTo':
+                                    current_path.append(tuple(args[0]))
+                                elif cmd == 'closePath':
+                                    if current_path and current_path[0] != current_path[-1]:
+                                        current_path.append(current_path[0])
+                                    if current_path:
+                                        paths.append(current_path)
+                                    current_path = []
+                                elif cmd == 'qCurveTo':
+                                    # Handle quadratic curves by approximating with line segments
+                                    if len(args) >= 2:  # Need at least start and end points
+                                        start = current_path[-1] if current_path else (0, 0)
+                                        for i in range(0, len(args)-1):
+                                            t = i / (len(args)-1)
+                                            x = (1-t)*start[0] + t*args[-1][0]
+                                            y = (1-t)*start[1] + t*args[-1][1]
+                                            current_path.append((x, y))
+                            except Exception as e:
+                                logger.error(f"Error processing path command {cmd} for '{char_str}': {e}")
+                        
+                        if current_path:
+                            paths.append(current_path)
+                        
+                        logger.debug(f"Extracted {len(paths)} raw paths for '{char_str}'")
+                        
+                        # Scale paths to our coordinate system
+                        scaled_paths = []
+                        try:
+                            for path_idx, path in enumerate(paths):
+                                scaled_path = []
+                                for x, y in path:
+                                    # Flip y-coordinate since TTF has origin at bottom
+                                    # Scale to 40 units height and add padding
+                                    scaled_x = (x * 40 / units_per_em)
+                                    scaled_y = 40 - (y * 40 / units_per_em)
+                                    scaled_path.append((scaled_x, scaled_y))
+                                if len(scaled_path) >= 2:  # Only add valid paths
+                                    scaled_paths.append(scaled_path)
+                                    
+                            logger.debug(f"Converted {len(scaled_paths)} scaled paths for '{char_str}'")
+                            self.font_data[char_str] = scaled_paths
+                            
+                        except Exception as e:
+                            logger.error(f"Error scaling paths for '{char_str}': {e}")
+                            
+                except Exception as e:
+                    logger.error(f"Error processing character '{char_str}': {e}")
             
             logger.info(f"Created development font with {len(self.font_data)} characters")
             
