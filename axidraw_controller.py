@@ -205,8 +205,11 @@ class AxiDrawController:
             if self.dev_mode:
                 # Simulate plotting in development mode
                 simulation_logs = []
-                simulation_logs.append("Development mode: Simulating AxiDraw plotting")
-                simulation_logs.append("Validating paths and simulating movements...")
+                simulation_logs.append("=== Starting Plot Simulation ===")
+                simulation_logs.append("1. Initial Position Setup:")
+                simulation_logs.append("   • Moving to home position (0, 0)")
+                simulation_logs.append("   • Ensuring pen is UP")
+                simulation_logs.append("\n2. Beginning Plot Sequence:")
                 
                 total_path_distance = 0
                 total_pen_movements = 0
@@ -214,13 +217,14 @@ class AxiDrawController:
                 for i, path in enumerate(paths):
                     # Validate path structure
                     if not path:
-                        simulation_logs.append(f"Warning: Path {i} is empty, skipping")
+                        simulation_logs.append(f"   • Warning: Path {i} is empty, skipping")
                         continue
                         
                     # Log movement simulation
                     first_point = path[0]
-                    simulation_logs.append(f"Path {i}: Moving to start position ({first_point['x']:.1f}, {first_point['y']:.1f})")
-                    simulation_logs.append("Lowering pen")
+                    simulation_logs.append(f"\n   Path {i + 1}:")
+                    simulation_logs.append(f"   • Moving to start position ({first_point['x']:.1f}, {first_point['y']:.1f})")
+                    simulation_logs.append("   • Lowering pen DOWN")
                     total_pen_movements += 1
                     
                     # Calculate total distance for this path
@@ -231,22 +235,27 @@ class AxiDrawController:
                         dy = point['y'] - prev_point['y']
                         distance = (dx * dx + dy * dy) ** 0.5
                         total_distance += distance
-                        simulation_logs.append(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
+                        simulation_logs.append(f"   • Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
                         prev_point = point
                     
                     total_path_distance += total_distance
-                    simulation_logs.append(f"Path {i}: Total drawing distance: {total_distance:.1f} units")
-                    simulation_logs.append("Raising pen")
+                    simulation_logs.append(f"   • Total drawing distance: {total_distance:.1f} units")
+                    simulation_logs.append("   • Raising pen UP")
                     total_pen_movements += 1
                 
                 # Calculate estimated plotting time and stats
                 est_time = len(paths) * 2  # Rough estimate: 2 seconds per path
-                simulation_logs.append("-------------------")
-                simulation_logs.append("Plotting Statistics:")
-                simulation_logs.append(f"Total paths: {len(paths)}")
-                simulation_logs.append(f"Total drawing distance: {total_path_distance:.1f} units")
-                simulation_logs.append(f"Total pen movements: {total_pen_movements}")
-                simulation_logs.append(f"Estimated plotting time: {est_time} seconds")
+                simulation_logs.append("\n3. Completing Plot:")
+                simulation_logs.append("   • Ensuring pen is UP")
+                simulation_logs.append("   • Returning to home position (0, 0)")
+                simulation_logs.append("\n=== Plot Statistics ===")
+                simulation_logs.append(f"• Total paths plotted: {len(paths)}")
+                simulation_logs.append(f"• Total drawing distance: {total_path_distance:.1f} units")
+                simulation_logs.append(f"• Total pen up/down movements: {total_pen_movements}")
+                simulation_logs.append(f"• Estimated plotting time: {est_time} seconds")
+                simulation_logs.append("\n=== Final Position ===")
+                simulation_logs.append("• Pen: UP")
+                simulation_logs.append("• Location: Home position (0, 0)")
                 
                 return {
                     'success': True,

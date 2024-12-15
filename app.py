@@ -22,9 +22,9 @@ def after_request(response):
     return response
 
 # Initialize AxiDraw controller and font parser
-# Explicitly set hardware mode and configure logging
+# Set to development mode for testing sequence
 logging.getLogger('axidraw_controller').setLevel(logging.DEBUG)
-axidraw = AxiDrawController(dev_mode=False)  # Hardware mode only
+axidraw = AxiDrawController(dev_mode=True)  # Development mode for testing
 font_parser = FontParser()
 
 @app.route('/')
