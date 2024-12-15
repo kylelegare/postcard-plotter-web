@@ -1,7 +1,7 @@
-@font-face {
-    font-family: 'PremiumUltra';
-    src: url('../fonts/PremiumUltra54SL.ttf') format('truetype');
+/* Use a monospace font for preview that approximates the final look */
+.preview-text {
+    font-family: monospace;
     font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
 }

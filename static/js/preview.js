@@ -109,8 +109,6 @@ class PostcardPreview {
     }
     
     drawPaths(data) {
-        console.log('Drawing paths:', data.plotPaths);
-        
         // Clear canvas and set up initial state
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.save();
@@ -124,49 +122,23 @@ class PostcardPreview {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
         
-        if (!data || !data.plotPaths || !data.plotPaths.length) {
-            console.log('No plot paths received:', data);
+        if (!data || !data.text) {
             this.ctx.restore();
             return;
         }
         
-        // Set up path rendering with a pen-like appearance
-        this.ctx.strokeStyle = '#000000';  // Darker strokes for better visibility
-        this.ctx.lineWidth = 2.5;  // Slightly thicker lines
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
+        // Set up text rendering
+        this.ctx.fillStyle = '#000000';
+        this.ctx.font = `${data.fontSize}px monospace`;
+        this.ctx.textBaseline = 'top';
         
-        // Enable anti-aliasing
-        this.ctx.imageSmoothingEnabled = true;
-        this.ctx.imageSmoothingQuality = 'high';
+        // Calculate text position (50px margin)
+        const margin = 50;
+        const x = margin;
+        const y = margin;
         
-        // Draw each path
-        data.plotPaths.forEach((path, index) => {
-            console.log(`Drawing path ${index}:`, path);
-            
-            if (!path || path.length < 2) {
-                console.log(`Skipping invalid path ${index}:`, path);
-                return;
-            }
-            
-            // Draw path
-            this.ctx.beginPath();
-            
-            // Move to first point
-            if (path[0]) {
-                this.ctx.moveTo(path[0].x, path[0].y);
-            }
-            
-            // Draw through remaining points
-            for (let i = 1; i < path.length; i++) {
-                if (path[i]) {
-                    this.ctx.lineTo(path[i].x, path[i].y);
-                }
-            }
-            
-            // Stroke the path
-            this.ctx.stroke();
-        });
+        // Draw the text for preview
+        this.ctx.fillText(data.text, x, y);
         
         this.ctx.restore();
     }
