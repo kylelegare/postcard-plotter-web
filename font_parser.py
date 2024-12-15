@@ -143,26 +143,47 @@ class FontParser:
         for word in words:
             # Generate potential mistake
             modified_word, is_mistake = self.generate_mistake(word)
-            word_width = len(modified_word) * char_width * 1.2  # Include character spacing
             
-            # Track position if this is a mistake
-            if is_mistake:
-                mistake_ranges.append({
-                    'x': x_pos + current_width,
-                    'width': word_width,
-                    'y': y_pos
-                })
+            # Add word to current line
+            test_line = (current_line + [modified_word]) if current_line else [modified_word]
+            test_width = sum(len(w) * char_width * 1.2 for w in test_line)
             
-            # Check if adding this word would exceed max width
-            if current_width + word_width > max_width and current_line:
+            if test_width > max_width and current_line:
                 # Process current line
                 line_x = x_pos
-                for char in ' '.join(current_line):
-                    if char != ' ':
+                for word_to_render in current_line:
+                    if word_to_render != ' ':
                         # Get character's stroke paths
+                        for char in word_to_render:
+                            char_paths = self.font_data.get(char, self.font_data['I'])
+                            
+                            # Transform and scale each path
+                            for stroke in char_paths:
+                                path = []
+                                for x, y in stroke:
+                                    path.append({
+                                        'x': line_x + (x * scale),
+                                        'y': y_pos + (y * scale)
+                                    })
+                                paths.append(path)
+                            line_x += char_width * 1.2
+                    line_x += char_width * 0.5  # Space between words
+                
+                # Move to next line
+                y_pos += char_height * 1.5
+                current_line = [modified_word]
+                current_width = len(modified_word) * char_width * 1.2
+            else:
+                current_line.append(modified_word)
+                current_width = test_width
+
+        # Process remaining line if any
+        if current_line:
+            line_x = x_pos
+            for word_to_render in current_line:
+                if word_to_render != ' ':
+                    for char in word_to_render:
                         char_paths = self.font_data.get(char, self.font_data['I'])
-                        
-                        # Transform and scale each path
                         for stroke in char_paths:
                             path = []
                             for x, y in stroke:
@@ -171,34 +192,10 @@ class FontParser:
                                     'y': y_pos + (y * scale)
                                 })
                             paths.append(path)
-                    line_x += char_width * 1.2
-                
-                # Move to next line
-                y_pos += char_height * 1.5
-                current_line = [word]
-                current_width = word_width
-            else:
-                current_line.append(word)
-                current_width += word_width
-        
-        # Process remaining line if any
-        if current_line:
-            line_x = x_pos
-            for char in ' '.join(current_line):
-                if char != ' ':
-                    char_path = [
-                        {'x': line_x, 'y': y_pos},  # Top left
-                        {'x': line_x + char_width, 'y': y_pos},  # Top right
-                        {'x': line_x + char_width, 'y': y_pos + char_height},  # Bottom right
-                        {'x': line_x, 'y': y_pos + char_height},  # Bottom left
-                        {'x': line_x, 'y': y_pos}  # Back to start
-                    ]
-                    paths.append(char_path)
-                line_x += char_width * 1.2
-        
-        logger.debug(f"Generated {len(paths)} character paths")
-        return paths
-        
+                        line_x += char_width * 1.2
+                line_x += char_width * 0.5  # Space between words
+
+
         # Add strike-through paths for mistakes
         for mistake in mistake_ranges:
             # Create diagonal strike-through
