@@ -124,29 +124,66 @@ class PostcardPreview {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
         
-        if (!data || !data.plotPaths || !data.plotPaths.length) {
-            console.log("No valid plot paths provided");
+        if (!data || !data.text) {
+            console.log("No valid text provided");
             this.ctx.restore();
             return;
         }
         
-        // Draw each path
-        this.ctx.strokeStyle = '#000';
-        this.ctx.lineWidth = 1;
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
+        // Set up text rendering with preview font
+        this.ctx.fillStyle = '#000';
+        this.ctx.font = `${data.fontSize}px PremiumUltra`;
+        this.ctx.textBaseline = 'top';
         
-        for (const path of data.plotPaths) {
-            if (path.length < 2) continue;
+        const margin = 20;
+        const lineHeight = data.fontSize * 1.2;
+        const maxWidth = this.width - (margin * 2);
+        
+        // Split text into lines
+        const lines = data.text.split('\n');
+        let y = margin;
+        
+        // Draw each line
+        lines.forEach(line => {
+            let x = margin;
+            const words = line.split(' ');
+            let currentLine = '';
             
-            this.ctx.beginPath();
-            this.ctx.moveTo(path[0].x, path[0].y);
+            // Process words for wrapping
+            words.forEach(word => {
+                const testLine = currentLine ? currentLine + ' ' + word : word;
+                const metrics = this.ctx.measureText(testLine);
+                
+                if (metrics.width > maxWidth && currentLine) {
+                    this.ctx.fillText(currentLine, x, y);
+                    currentLine = word;
+                    y += lineHeight;
+                } else {
+                    currentLine = testLine;
+                }
+            });
             
-            for (let i = 1; i < path.length; i++) {
-                this.ctx.lineTo(path[i].x, path[i].y);
+            // Draw remaining text in current line
+            if (currentLine) {
+                this.ctx.fillText(currentLine, x, y);
+                y += lineHeight;
             }
+        });
+        
+        // Draw strike-throughs for mistakes if any
+        if (data.plotPaths) {
+            this.ctx.strokeStyle = '#000';
+            this.ctx.lineWidth = 1;
             
-            this.ctx.stroke();
+            // Look for strike-through paths (which are always 2 points for mistakes)
+            data.plotPaths.forEach(path => {
+                if (path.length === 2) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(path[0].x, path[0].y);
+                    this.ctx.lineTo(path[1].x, path[1].y);
+                    this.ctx.stroke();
+                }
+            });
         }
         
         this.ctx.restore();

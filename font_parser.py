@@ -53,6 +53,7 @@ class FontParser:
             from fontTools.pens.recordingPen import RecordingPen
             
             logger.debug("Loading PremiumUltra font")
+            # Use the single-stroke font (SL) for actual plotting
             font_path = "static/fonts/PremiumUltra54SL.ttf"
             
             # Load the font file
