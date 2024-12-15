@@ -19,13 +19,21 @@ class FontLoadObserver {
         this.ctx = this.canvas.getContext('2d');
         this.socket = io();
         
-        // Wait for font to load before initializing
+        // Setup event listeners and socket handlers immediately
+        this.setupEventListeners();
+        this.setupWebSocket();
+        
+        // Wait for font to load before initializing canvas
         FontLoadObserver.waitForFont('PremiumUltra').then(() => {
             console.log('PremiumUltra font loaded');
             this.setupCanvas();
+            // Trigger initial preview
+            this.updatePreview();
         }).catch(err => {
             console.warn('Font loading failed, falling back to system font:', err);
             this.setupCanvas();
+            // Still trigger preview even with fallback font
+            this.updatePreview();
         });
     }
     
@@ -48,9 +56,6 @@ class FontLoadObserver {
         
         // Scale all drawing operations by the dpr
         this.ctx.scale(dpr, dpr);
-        
-        this.setupEventListeners();
-        this.setupWebSocket();
         
         // Initial clear
         this.clear();
