@@ -60,13 +60,13 @@ class PostcardPreview {
             // Convert slider value to actual frequency ratio
             mistakeFrequency: (() => {
                 const ratios = {
-                    0: 0,
-                    1: 1/500,
-                    2: 1/100,
-                    3: 1/50,
-                    4: 1/10
+                    0: 0.0,      // Never
+                    1: 0.002,    // 1 in 500
+                    2: 0.01,     // 1 in 100
+                    3: 0.02,     // 1 in 50
+                    4: 0.1       // 1 in 10
                 };
-                return ratios[parseInt(mistakeFrequency)];
+                return ratios[parseInt(mistakeFrequency)] || 0.0;
             })()
         });
     }
