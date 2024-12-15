@@ -149,11 +149,11 @@ class FontParser:
                             for path_idx, path in enumerate(paths):
                                 scaled_path = []
                                 for x, y in path:
-                                    # Scale paths to fit within normalized coordinate system (0-100 units)
+                                    # Scale paths to fit within normalized coordinate system (0-30 units)
                                     # Use a smaller base size for more efficient plotting
-                                    scale_factor = 15 / units_per_em  # Reduced scale for more compact paths
-                                    scaled_x = round((x * scale_factor), 2)  # Round to 2 decimal places
-                                    scaled_y = round(15 - (y * scale_factor), 2)  # Flip y-coordinate and round
+                                    scale_factor = 8 / units_per_em  # Further reduced scale for more compact paths
+                                    scaled_x = round((x * scale_factor), 1)  # Round to 1 decimal place
+                                    scaled_y = round(10 - (y * scale_factor), 1)  # Reduced y-range and round
                                     # Only add point if it's significantly different from the last one
                                     if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
                                         scaled_path.append((scaled_x, scaled_y))
@@ -226,13 +226,13 @@ class FontParser:
         
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
-        # Calculate scale based on normalized coordinate system (0-50 units)
-        base_size = 8  # Smaller base size for more compact plotting
-        scale = (font_size / 12) * (base_size / 15)  # Scale relative to reduced base size
+        # Calculate scale based on normalized coordinate system (0-30 units)
+        base_size = 5  # Further reduced base size for more compact plotting
+        scale = (font_size / 12) * (base_size / 8)  # Scale relative to reduced base size
         char_width = base_size * scale  # Character width
         char_height = base_size * scale
-        spacing = (base_size / 5) * scale  # More compact spacing between characters
-        max_width = 50 - (margin * 2)  # Reduced max width for better proportions
+        spacing = (base_size / 6) * scale  # More compact spacing between characters
+        max_width = 30 - (margin * 2)  # Further reduced width for better proportions
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
         
