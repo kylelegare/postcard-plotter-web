@@ -30,18 +30,15 @@ class PostcardPreview {
 
         mistakeFrequency.addEventListener('input', (e) => {
             const value = parseInt(e.target.value);
-            // Update display text based on frequency
-            if (value === 0) {
-                mistakeValue.textContent = 'Never';
-            } else if (value <= 20) {
-                mistakeValue.textContent = 'Rare';
-            } else if (value <= 50) {
-                mistakeValue.textContent = 'Occasional';
-            } else if (value <= 80) {
-                mistakeValue.textContent = 'Frequent';
-            } else {
-                mistakeValue.textContent = 'Very Frequent';
-            }
+            // Map slider values to specific ratios
+            const ratios = {
+                0: 'Never',
+                1: '1 in 500',
+                2: '1 in 100',
+                3: '1 in 50',
+                4: '1 in 10'
+            };
+            mistakeValue.textContent = ratios[value];
             this.updatePreview();
         });
     }
@@ -60,7 +57,17 @@ class PostcardPreview {
         this.socket.emit('update_text', {
             text: text,
             fontSize: parseInt(fontSize),
-            mistakeFrequency: parseInt(mistakeFrequency) / 100 // Convert to 0-1 range
+            // Convert slider value to actual frequency ratio
+            mistakeFrequency: (() => {
+                const ratios = {
+                    0: 0,
+                    1: 1/500,
+                    2: 1/100,
+                    3: 1/50,
+                    4: 1/10
+                };
+                return ratios[parseInt(mistakeFrequency)];
+            })()
         });
     }
     
