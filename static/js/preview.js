@@ -81,7 +81,22 @@ class PostcardPreview {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
         
-        if (!data.plotPaths || !data.plotPaths.length) return;
+        // Clear any existing content
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        
+        // Draw postcard background
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        
+        // Draw subtle postcard border
+        this.ctx.strokeStyle = '#ddd';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
+        
+        if (!data || !data.plotPaths || !data.plotPaths.length) {
+            console.log('No plot paths available');
+            return;
+        }
         
         this.ctx.save();
         
@@ -91,12 +106,14 @@ class PostcardPreview {
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         
+        console.log(`Rendering ${data.plotPaths.length} paths`);
+        
         // Draw each path
         data.plotPaths.forEach((path, index) => {
-            if (!path || path.length < 2) return;
-            
-            // Log path info for debugging
-            console.log(`Drawing path ${index}:`, path);
+            if (!path || path.length < 2) {
+                console.log(`Skipping invalid path ${index}`);
+                return;
+            }
             
             this.ctx.beginPath();
             this.ctx.moveTo(path[0].x, path[0].y);
