@@ -90,8 +90,16 @@ def plot_text():
         font_size = data.get('fontSize', 12)
         
         # Get text paths and plot
-        paths = font_parser.get_text_paths(text, font_size)
-        result = axidraw.plot_paths(paths)
+        # Convert text to paths and reshape for plotting
+        raw_paths = font_parser.get_text_paths(text, font_size)
+        
+        # Reshape paths to match expected format [[{x, y}, {x, y}], ...]
+        plot_paths = []
+        for path in raw_paths:
+            if len(path) >= 2:  # Only include valid paths with at least 2 points
+                plot_paths.append(path)
+        
+        result = axidraw.plot_paths(plot_paths)
         
         return jsonify(result)
     except Exception as e:
@@ -123,4 +131,4 @@ def disconnect_axidraw():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=True, log_output=True)
