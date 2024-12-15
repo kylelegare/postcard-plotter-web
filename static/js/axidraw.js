@@ -98,7 +98,25 @@ class AxiDrawController {
             
             if (data.success) {
                 this.updateStatus('Message plotted successfully', 'success');
-                this.addSimulationLog('Plot simulation completed successfully');
+                
+                // Display simulation logs if available
+                if (data.simulation_logs) {
+                    data.simulation_logs.forEach(log => {
+                        this.addSimulationLog(log);
+                    });
+                }
+                
+                // Display statistics if available
+                if (data.statistics) {
+                    this.addSimulationLog('-------------------');
+                    this.addSimulationLog('Final Statistics:', 'text-info');
+                    Object.entries(data.statistics).forEach(([key, value]) => {
+                        const formattedKey = key.split('_').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                        ).join(' ');
+                        this.addSimulationLog(`${formattedKey}: ${value}`, 'text-info');
+                    });
+                }
             } else {
                 throw new Error(data.error || 'Failed to plot message');
             }
