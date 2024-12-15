@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AxiDraw Postcard Writer</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Postcard Preview</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="previewCanvas" width="600" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="messageText" class="form-label">Message</label>
+                            <textarea class="form-control" id="messageText" rows="4" placeholder="Enter your message..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fontSize" class="form-label">Font Size</label>
+                            <input type="range" class="form-range" id="fontSize" min="8" max="36" value="12">
+                            <span id="fontSizeValue">12pt</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button id="connectBtn" class="btn btn-secondary w-100 mb-2">
+                                <i class="fas fa-plug"></i> Connect AxiDraw
+                            </button>
+                            <button id="plotBtn" class="btn btn-primary w-100" disabled>
+                                <i class="fas fa-pen"></i> Plot Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="statusMessage" class="alert alert-info">
+                            Disconnected
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="/static/js/preview.js"></script>
+    <script src="/static/js/axidraw.js"></script>
+</body>
+</html>

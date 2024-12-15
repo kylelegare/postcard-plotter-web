@@ -1,0 +1,26 @@
+/* Canvas styling */
+#previewCanvas {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--bs-border-color);
+    background-color: white;
+}
+
+/* Status message styling */
+#statusMessage {
+    margin-bottom: 0;
+}
+
+/* Font size display */
+#fontSizeValue {
+    display: inline-block;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+}
