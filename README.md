@@ -31,10 +31,28 @@ git clone https://github.com/yourusername/postcard-plotter-web.git
 1. First, create a new repository on GitHub:
    - Go to https://github.com/new
    - Name your repository (e.g., "postcard-plotter-web")
-   - Leave it empty (no README, no license)
+   - Add README and LICENSE when creating (recommended)
    - Copy the repository URL
 
-2. Clone this repository to your local machine:
+2. Push existing code to GitHub:
+```bash
+# Initialize git repository (if not already done)
+git init
+
+# Add all files
+git add .
+
+# Commit changes
+git commit -m "Initial commit: AxiDraw postcard plotter web interface"
+
+# Add GitHub repository as remote
+git remote add origin https://github.com/YOUR_USERNAME/postcard-plotter-web.git
+
+# Push to GitHub
+git push -u origin main
+```
+
+3. Clone the repository (on another machine):
 ```bash
 git clone https://github.com/YOUR_USERNAME/postcard-plotter-web.git
 cd postcard-plotter-web
@@ -75,9 +93,15 @@ pip install flask flask-socketio fonttools
 - Connect the USB cable between your computer and the AxiDraw Mini
 - The device uses a standard USB connection and is detected as a serial device
 - No additional driver installation needed on most systems
-- The application automatically detects the AxiDraw through pyaxidraw's USB detection
-- If multiple AxiDraw devices are connected, the first available one will be used
-- Connection issues are handled gracefully with fallback to simulation mode
+- The application will attempt to connect to the AxiDraw through USB
+
+Note on Operation Modes:
+- Hardware Mode (Default): Requires physical AxiDraw device connected via USB
+- Development Mode: For testing without hardware, use `dev_mode=True` in app.py
+  ```python
+  # In app.py, change this line to enable development mode:
+  axidraw = AxiDrawController(dev_mode=True)  # Set to True for development mode
+  ```
 
 5. Run the application:
 ```bash
