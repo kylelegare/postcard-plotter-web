@@ -131,10 +131,14 @@ class PostcardPreview {
         }
         
         // Set up path rendering with a pen-like appearance
-        this.ctx.strokeStyle = '#1a1a1a';
-        this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = '#000000';  // Darker strokes for better visibility
+        this.ctx.lineWidth = 2.5;  // Slightly thicker lines
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
+        
+        // Enable anti-aliasing
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
         
         // Draw each path
         data.plotPaths.forEach((path, index) => {

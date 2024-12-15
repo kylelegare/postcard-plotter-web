@@ -341,10 +341,10 @@ class FontParser:
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
         # Base size is 40 units, scale everything relative to requested font size
-        scale = font_size / 20  # Make text larger by default
-        char_width = 30 * scale
+        scale = font_size / 12  # Increase base size for better visibility
+        char_width = 40 * scale  # Wider character width
         char_height = 40 * scale
-        spacing = 10 * scale  # Add proper character spacing
+        spacing = 15 * scale  # Increase spacing between characters
         max_width = 600 - (margin * 2)  # Max width with margins
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
@@ -371,19 +371,30 @@ class FontParser:
                 # Render current line
                 render_x = line_start_x
                 for w in current_line:
-                    # Get paths for each character
+                    # Add word spacing
+                    if render_x > line_start_x:
+                        render_x += spacing * 2  # Double spacing between words
+
                     for char in w:
-                        char_paths = self.font_data.get(char, self.font_data['I'])
+                        # Get character paths, fallback to box shape if not found
+                        char_paths = self.font_data.get(char, [[(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]])
+
+                        # Draw each stroke in the character
                         for stroke in char_paths:
                             path = []
                             for x, y in stroke:
+                                # Scale and position the point
+                                scaled_x = render_x + (x * scale)
+                                scaled_y = y_pos + (y * scale)
                                 path.append({
-                                    'x': render_x + (x * scale),
-                                    'y': y_pos + (y * scale)
+                                    'x': scaled_x,
+                                    'y': scaled_y
                                 })
-                            paths.append(path)
-                        render_x += char_width
-                    render_x += char_width * 0.2  # Space between words
+                            if len(path) >= 2:  # Only add valid paths
+                                paths.append(path)
+
+                        # Move to next character position
+                        render_x += char_width + (spacing * 0.5)  # Add spacing between characters
                 
                 # Move to next line
                 y_pos += char_height * 1.5
@@ -409,18 +420,30 @@ class FontParser:
         if current_line:
             render_x = line_start_x
             for w in current_line:
+                # Add word spacing
+                if render_x > line_start_x:
+                    render_x += spacing * 2  # Double spacing between words
+                
                 for char in w:
-                    char_paths = self.font_data.get(char, self.font_data['I'])
+                    # Get character paths, fallback to box shape if not found
+                    char_paths = self.font_data.get(char, [[(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]])
+                    
+                    # Draw each stroke in the character
                     for stroke in char_paths:
                         path = []
                         for x, y in stroke:
+                            # Scale and position the point
+                            scaled_x = render_x + (x * scale)
+                            scaled_y = y_pos + (y * scale)
                             path.append({
-                                'x': render_x + (x * scale),
-                                'y': y_pos + (y * scale)
+                                'x': scaled_x,
+                                'y': scaled_y
                             })
-                        paths.append(path)
-                    render_x += char_width
-                render_x += char_width * 0.2
+                        if len(path) >= 2:  # Only add valid paths
+                            paths.append(path)
+                    
+                    # Move to next character position
+                    render_x += char_width + (spacing * 0.5)  # Add spacing between characters
         
         # Add strike-through for mistakes
         for mistake in mistakes_to_strike:
