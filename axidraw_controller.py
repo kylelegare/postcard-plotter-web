@@ -73,12 +73,41 @@ class AxiDrawController:
             
             if self.dev_mode:
                 # Simulate plotting in development mode
-                logger.info("Development mode: Simulating path plotting")
-                for path in paths:
-                    logger.debug(f"Plotting path with {len(path)} points")
+                logger.info("Development mode: Simulating AxiDraw plotting")
+                logger.info("Validating paths and simulating movements...")
+                
+                for i, path in enumerate(paths):
+                    # Validate path structure
+                    if not path:
+                        logger.warning(f"Path {i} is empty, skipping")
+                        continue
+                        
+                    # Log movement simulation
+                    first_point = path[0]
+                    logger.info(f"Path {i}: Moving to start position ({first_point['x']:.1f}, {first_point['y']:.1f})")
+                    logger.info("Lowering pen")
+                    
+                    # Calculate total distance for this path
+                    total_distance = 0
+                    prev_point = first_point
+                    for point in path[1:]:
+                        dx = point['x'] - prev_point['x']
+                        dy = point['y'] - prev_point['y']
+                        distance = (dx * dx + dy * dy) ** 0.5
+                        total_distance += distance
+                        logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
+                        prev_point = point
+                    
+                    logger.info(f"Path {i}: Total drawing distance: {total_distance:.1f} units")
+                    logger.info("Raising pen")
+                
+                # Estimate total plotting time
+                est_time = len(paths) * 2  # Rough estimate: 2 seconds per path
+                logger.info(f"Estimated plotting time: {est_time} seconds")
                 return True
             
-            # Configure plotting parameters
+            # Real hardware mode
+            logger.info("Configuring AxiDraw plotting parameters")
             self.ad.options.speed_pendown = 25  # Adjust based on needs
             self.ad.options.speed_penup = 75
             self.ad.options.accel = 75
@@ -86,14 +115,20 @@ class AxiDrawController:
             self.ad.options.pen_pos_up = 60
             
             # Plot each path
-            for path in paths:
+            for i, path in enumerate(paths):
+                if not path:
+                    logger.warning(f"Path {i} is empty, skipping")
+                    continue
+                    
                 # Move to start of path
                 first_point = path[0]
+                logger.debug(f"Path {i}: Moving to ({first_point['x']:.1f}, {first_point['y']:.1f})")
                 self.ad.moveto(first_point['x'], first_point['y'])
                 self.ad.pendown()
                 
                 # Draw path
                 for point in path[1:]:
+                    logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
                     self.ad.lineto(point['x'], point['y'])
                 
                 self.ad.penup()
