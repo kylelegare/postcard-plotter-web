@@ -64,11 +64,11 @@ class FontParser:
             # Create simple character shapes
             # Each character is represented by a series of paths that form its shape
             
-            # Basic single-stroke letters
+            # Basic single-stroke letters with consistent height of 40 units
             # Letter 'A'
             self.font_data['A'] = [
                 [(0, 40), (20, 0), (40, 40)],  # Outer lines
-                [(10, 20), (30, 20)]  # Cross bar
+                [(10, 25), (30, 25)]  # Cross bar
             ]
             
             # Letter 'H'
@@ -80,13 +80,28 @@ class FontParser:
             
             # Letter 'I'
             self.font_data['I'] = [
-                [(15, 0), (15, 40)]  # Single vertical line
+                [(0, 0), (20, 0)],  # Top bar
+                [(10, 0), (10, 40)],  # Vertical line
+                [(0, 40), (20, 40)]  # Bottom bar
             ]
             
             # Letter 'T'
             self.font_data['T'] = [
                 [(0, 0), (30, 0)],  # Top bar
                 [(15, 0), (15, 40)]  # Vertical line
+            ]
+
+            # Letter 'E'
+            self.font_data['E'] = [
+                [(0, 0), (0, 40)],  # Vertical line
+                [(0, 0), (30, 0)],  # Top bar
+                [(0, 20), (20, 20)],  # Middle bar
+                [(0, 40), (30, 40)]  # Bottom bar
+            ]
+
+            # Letter 'S'
+            self.font_data['S'] = [
+                [(30, 5), (20, 0), (10, 0), (0, 5), (0, 15), (30, 25), (30, 35), (20, 40), (10, 40), (0, 35)]
             ]
             
             # Default simple single-stroke shapes for other characters
@@ -128,15 +143,20 @@ class FontParser:
             return []
             
         paths = []
-        margin = 100  # 1-inch margin at 100 DPI
+        margin = 50  # 0.5-inch margin at 100 DPI
         x_pos = margin
-        y_pos = margin
+        y_pos = margin + font_size  # Start y position at margin plus font size
+        
+        logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
         # Base size is 40 units, scale everything relative to requested font size
-        scale = font_size / 40
+        scale = font_size / 20  # Make text larger by default
         char_width = 30 * scale
         char_height = 40 * scale
+        spacing = 10 * scale  # Add proper character spacing
         max_width = 600 - (margin * 2)  # Max width with margins
+        
+        logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
         
         logger.debug(f"Converting text: '{text}' at font size {font_size}")
         logger.debug(f"Scale: {scale}, Mistake frequency: {self.mistake_frequency}")
