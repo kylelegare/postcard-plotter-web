@@ -3,11 +3,14 @@ from typing import List, Dict
 
 logger = logging.getLogger(__name__)
 
+# First try to import the module
 try:
     from pyaxidraw import axidraw
     AXIDRAW_AVAILABLE = True
-except ImportError:
-    logger.warning("pyaxidraw module not found - running in development mode")
+    logger.info("Successfully imported pyaxidraw module")
+except ImportError as e:
+    logger.error(f"Failed to import pyaxidraw module: {str(e)}")
+    logger.error("Please install using: python -m pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip")
     AXIDRAW_AVAILABLE = False
 
 class AxiDrawController:
@@ -28,44 +31,61 @@ class AxiDrawController:
             Dict with success status and error message if any
         """
         try:
+            logger.info("Starting AxiDraw connection process...")
+            
             if self.connected:
+                logger.info("Already connected to AxiDraw")
                 return {
                     'success': True,
                     'message': 'Already connected to AxiDraw'
                 }
             
+            # Check if module is available
             if not AXIDRAW_AVAILABLE:
-                logger.error("AxiDraw Python module not available. Please install using:")
-                logger.error("python -m pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip")
+                logger.error("AxiDraw Python module not available")
                 return {
                     'success': False,
-                    'error': 'AxiDraw Python module not installed. Please install the module first.'
+                    'error': 'AxiDraw Python module not installed. Please install the module first using:\npython -m pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip'
                 }
             
-            try:
-                self.ad = axidraw.AxiDraw()
-                self.ad.interactive()
-                self.ad.connect()
-                self.connected = True
-                logger.info("Successfully connected to physical AxiDraw device")
-                return {
-                    'success': True,
-                    'message': 'Connected to physical AxiDraw device'
-                }
-            except Exception as e:
-                logger.error(f"Could not connect to physical AxiDraw: {str(e)}")
-                if self.dev_mode:
-                    logger.info("Running in development mode as requested")
+            # Only try hardware connection if not in forced dev mode
+            if not self.dev_mode:
+                try:
+                    logger.info("Attempting to connect to physical AxiDraw device...")
+                    self.ad = axidraw.AxiDraw()
+                    logger.debug("AxiDraw object created")
+                    
+                    self.ad.interactive()
+                    logger.debug("Interactive mode enabled")
+                    
+                    self.ad.connect()
+                    logger.info("Successfully connected to physical AxiDraw device")
+                    
+                    # Test connection by getting version
+                    version = self.ad.version()
+                    logger.info(f"Connected to AxiDraw firmware version: {version}")
+                    
                     self.connected = True
                     return {
                         'success': True,
-                        'message': 'Connected in development mode (simulation only)'
+                        'message': f'Connected to physical AxiDraw device (Firmware v{version})'
                     }
-                else:
-                    return {
-                        'success': False,
-                        'error': 'No AxiDraw device found. Please check USB connection and device power.'
-                    }
+                except Exception as e:
+                    logger.error(f"Failed to connect to physical AxiDraw: {str(e)}")
+                    if not self.dev_mode:
+                        return {
+                            'success': False,
+                            'error': f'Could not connect to AxiDraw device. Please check:\n1. USB connection\n2. Device power\n3. Correct drivers installed\nError: {str(e)}'
+                        }
+            
+            # Fall back to dev mode if requested or if hardware connection failed
+            if self.dev_mode:
+                logger.info("Running in development mode as requested")
+                self.connected = True
+                return {
+                    'success': True,
+                    'message': 'Connected in development mode (simulation only)'
+                }
                 
         except Exception as e:
             logger.error(f"Error connecting to AxiDraw: {str(e)}")
