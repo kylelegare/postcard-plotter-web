@@ -17,48 +17,108 @@ class AxiDrawController:
         self.connected = False
         self.dev_mode = not AXIDRAW_AVAILABLE
     
-    def connect(self) -> bool:
+    def connect(self) -> Dict[str, any]:
         """Connect to AxiDraw device
         
         Returns:
-            bool: True if connection successful
+            Dict with success status and error message if any
         """
         try:
-            if not self.connected:
-                if self.dev_mode:
-                    logger.info("Development mode: Simulating AxiDraw connection")
-                    self.connected = True
-                    return True
-                    
-                if self.ad is None:
-                    raise Exception("AxiDraw not initialized")
-                    
+            if self.connected:
+                return {
+                    'success': True,
+                    'message': 'Already connected to AxiDraw'
+                }
+            
+            if self.dev_mode:
+                logger.info("Development mode: Simulating AxiDraw connection")
+                self.connected = True
+                return {
+                    'success': True,
+                    'message': 'Connected to AxiDraw (Development Mode)'
+                }
+            
+            if not AXIDRAW_AVAILABLE:
+                return {
+                    'success': False,
+                    'error': 'AxiDraw Python module not available'
+                }
+            
+            try:
+                self.ad = axidraw.AxiDraw()
                 self.ad.interactive()
                 self.ad.connect()
                 self.connected = True
                 logger.info("Connected to AxiDraw")
-            return True
+                return {
+                    'success': True,
+                    'message': 'Connected to AxiDraw'
+                }
+            except AttributeError as e:
+                logger.error(f"Error initializing AxiDraw: {str(e)}")
+                return {
+                    'success': False,
+                    'error': f'Failed to initialize AxiDraw: {str(e)}'
+                }
+                
         except Exception as e:
             logger.error(f"Error connecting to AxiDraw: {str(e)}")
-            return False
+            return {
+                'success': False,
+                'error': f'Failed to connect: {str(e)}'
+            }
     
-    def disconnect(self) -> bool:
+    def disconnect(self) -> Dict[str, any]:
         """Disconnect from AxiDraw device
         
         Returns:
-            bool: True if disconnection successful
+            Dict with success status and error message if any
         """
         try:
-            if self.connected:
-                self.ad.disconnect()
+            if not self.connected:
+                return {
+                    'success': True,
+                    'message': 'Already disconnected'
+                }
+            
+            if self.dev_mode:
                 self.connected = False
-                logger.info("Disconnected from AxiDraw")
-            return True
+                logger.info("Development mode: Simulated disconnect from AxiDraw")
+                return {
+                    'success': True,
+                    'message': 'Disconnected from AxiDraw (Development Mode)'
+                }
+            
+            if self.ad:
+                try:
+                    self.ad.disconnect()
+                    self.connected = False
+                    logger.info("Disconnected from AxiDraw")
+                    return {
+                        'success': True,
+                        'message': 'Disconnected from AxiDraw'
+                    }
+                except AttributeError as e:
+                    logger.error(f"Error disconnecting AxiDraw: {str(e)}")
+                    return {
+                        'success': False,
+                        'error': f'Failed to disconnect: {str(e)}'
+                    }
+            else:
+                self.connected = False
+                return {
+                    'success': True,
+                    'message': 'Disconnected (no device was initialized)'
+                }
+                
         except Exception as e:
             logger.error(f"Error disconnecting from AxiDraw: {str(e)}")
-            return False
+            return {
+                'success': False,
+                'error': f'Failed to disconnect: {str(e)}'
+            }
     
-    def plot_paths(self, paths: List[List[Dict[str, float]]]) -> Dict:
+    def plot_paths(self, paths: List[List[Dict[str, float]]]) -> Dict[str, any]:
         """Plot the given paths using AxiDraw
         
         Args:
@@ -128,13 +188,26 @@ class AxiDrawController:
                     }
                 }
             
+            if not self.ad:
+                return {
+                    'success': False,
+                    'error': 'AxiDraw device not initialized'
+                }
+            
             # Real hardware mode
             logger.info("Configuring AxiDraw plotting parameters")
-            self.ad.options.speed_pendown = 25  # Adjust based on needs
-            self.ad.options.speed_penup = 75
-            self.ad.options.accel = 75
-            self.ad.options.pen_pos_down = 40
-            self.ad.options.pen_pos_up = 60
+            try:
+                self.ad.options.speed_pendown = 25  # Adjust based on needs
+                self.ad.options.speed_penup = 75
+                self.ad.options.accel = 75
+                self.ad.options.pen_pos_down = 40
+                self.ad.options.pen_pos_up = 60
+            except AttributeError as e:
+                logger.error(f"Error configuring AxiDraw options: {str(e)}")
+                return {
+                    'success': False,
+                    'error': f'Failed to configure AxiDraw: {str(e)}'
+                }
             
             # Plot each path
             for i, path in enumerate(paths):
@@ -142,22 +215,35 @@ class AxiDrawController:
                     logger.warning(f"Path {i} is empty, skipping")
                     continue
                     
-                # Move to start of path
-                first_point = path[0]
-                logger.debug(f"Path {i}: Moving to ({first_point['x']:.1f}, {first_point['y']:.1f})")
-                self.ad.moveto(first_point['x'], first_point['y'])
-                self.ad.pendown()
-                
-                # Draw path
-                for point in path[1:]:
-                    logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
-                    self.ad.lineto(point['x'], point['y'])
-                
-                self.ad.penup()
+                try:
+                    # Move to start of path
+                    first_point = path[0]
+                    logger.debug(f"Path {i}: Moving to ({first_point['x']:.1f}, {first_point['y']:.1f})")
+                    self.ad.moveto(first_point['x'], first_point['y'])
+                    self.ad.pendown()
+                    
+                    # Draw path
+                    for point in path[1:]:
+                        logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
+                        self.ad.lineto(point['x'], point['y'])
+                    
+                    self.ad.penup()
+                except Exception as e:
+                    logger.error(f"Error plotting path {i}: {str(e)}")
+                    return {
+                        'success': False,
+                        'error': f'Failed to plot path {i}: {str(e)}'
+                    }
             
             logger.info("Plotting completed successfully")
-            return True
+            return {
+                'success': True,
+                'message': 'Plotting completed successfully'
+            }
             
         except Exception as e:
             logger.error(f"Error plotting paths: {str(e)}")
-            return False
+            return {
+                'success': False,
+                'error': f'Failed to plot: {str(e)}'
+            }
