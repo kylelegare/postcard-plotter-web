@@ -139,10 +139,12 @@ class FontParser:
                         for path in paths:
                             scaled_path = []
                             for x, y in path:
-                                # Scale paths to fit width
-                                scale_factor = 150 / units_per_em  # Scale to fit width
-                                scaled_x = round((x * scale_factor), 1)  # Round to 1 decimal place
-                                scaled_y = round(100 - (y * scale_factor * 0.8), 1)  # Flip Y and scale height
+                                # Scale and transform coordinates to match AxiDraw workspace
+                                # Scale to fit width while preserving aspect ratio
+                                scale_factor = min(150, 100) / units_per_em  
+                                # Transform to AxiDraw coordinate system (origin at bottom-left)
+                                scaled_x = round(20 + (x * scale_factor), 1)  # Add margin and round
+                                scaled_y = round(20 + (y * scale_factor), 1)  # Add margin and maintain Y direction
                                 # Only add point if it's significantly different from the last one
                                 if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
                                     scaled_path.append((scaled_x, scaled_y))
@@ -155,9 +157,9 @@ class FontParser:
                                 deduped_path = []
                                 
                                 for point in scaled_path:
-                                    # Validate coordinate range
-                                    if not (0 <= point[0] <= 150 and 0 <= point[1] <= 100):
-                                        logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
+                                    # Validate coordinates are within safe plotting area (with margins)
+                                    if not (10 <= point[0] <= 140 and 10 <= point[1] <= 90):
+                                        logger.warning(f"Point outside safe plotting area for '{char_str}': {point}")
                                         valid_path = False
                                         break
                                         
