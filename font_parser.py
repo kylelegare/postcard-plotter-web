@@ -258,7 +258,8 @@ class FontParser:
             total_width = word_width + (word_spacing if current_line else 0)
             
             # Check if we need to wrap to next line
-            if current_x + total_width > max_width + margin and current_line:
+            if current_x + total_width > max_width:
+                logger.debug(f"Word wrap needed at x={current_x}, width={total_width}, max={max_width}")
                 # Render current line
                 render_x = line_start_x
                 for w in current_line:
@@ -307,7 +308,9 @@ class FontParser:
                     'width': word_width
                 })
             
-            current_x += word_width + (char_width * 0.2)
+            # Update current_x position including word spacing
+            current_x += word_width + word_spacing
+            logger.debug(f"Updated x position to {current_x} after adding word '{modified_word}'")
         
         # Render remaining line if any
         if current_line:
