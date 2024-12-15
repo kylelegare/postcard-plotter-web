@@ -16,14 +16,7 @@ class FontParser:
         self.mistake_frequency = max(0.0, min(1.0, frequency))
         
     def generate_mistake(self, word: str) -> tuple[str, bool]:
-        """Generate a potential mistake for a word
-        
-        Args:
-            word: The word to modify
-            
-        Returns:
-            Tuple of (word, was_modified)
-        """
+        """Generate a potential mistake for a word"""
         import random
         
         # Skip words with capitals, punctuation, or if too short
@@ -52,7 +45,7 @@ class FontParser:
         modified = word[:pos] + replacement + word[pos+1:]
         logger.debug(f"Created mistake: '{word}' -> '{modified}'")
         return modified, True
-    
+
     def load_font(self):
         """Load font from TTF file and extract glyph paths"""
         try:
@@ -108,35 +101,32 @@ class FontParser:
                         glyph.draw(pen, glyf)
                         logger.debug(f"Captured {len(pen.value)} path commands for '{char_str}'")
                     
-                    # Convert pen recordings to our path format
+                        # Convert pen recordings to our path format
                         paths = []
                         current_path = []
                         
                         for cmd, args in pen.value:
-                            try:
-                                if cmd == 'moveTo':
-                                    if current_path:
-                                        paths.append(current_path)
-                                    current_path = [tuple(args[0])]
-                                elif cmd == 'lineTo':
-                                    current_path.append(tuple(args[0]))
-                                elif cmd == 'closePath':
-                                    if current_path and current_path[0] != current_path[-1]:
-                                        current_path.append(current_path[0])
-                                    if current_path:
-                                        paths.append(current_path)
-                                    current_path = []
-                                elif cmd == 'qCurveTo':
-                                    # Handle quadratic curves by approximating with line segments
-                                    if len(args) >= 2:  # Need at least start and end points
-                                        start = current_path[-1] if current_path else (0, 0)
-                                        for i in range(0, len(args)-1):
-                                            t = i / (len(args)-1)
-                                            x = (1-t)*start[0] + t*args[-1][0]
-                                            y = (1-t)*start[1] + t*args[-1][1]
-                                            current_path.append((x, y))
-                            except Exception as e:
-                                logger.error(f"Error processing path command {cmd} for '{char_str}': {e}")
+                            if cmd == 'moveTo':
+                                if current_path:
+                                    paths.append(current_path)
+                                current_path = [tuple(args[0])]
+                            elif cmd == 'lineTo':
+                                current_path.append(tuple(args[0]))
+                            elif cmd == 'closePath':
+                                if current_path and current_path[0] != current_path[-1]:
+                                    current_path.append(current_path[0])
+                                if current_path:
+                                    paths.append(current_path)
+                                current_path = []
+                            elif cmd == 'qCurveTo':
+                                # Handle quadratic curves by approximating with line segments
+                                if len(args) >= 2:  # Need at least start and end points
+                                    start = current_path[-1] if current_path else (0, 0)
+                                    for i in range(0, len(args)-1):
+                                        t = i / (len(args)-1)
+                                        x = (1-t)*start[0] + t*args[-1][0]
+                                        y = (1-t)*start[1] + t*args[-1][1]
+                                        current_path.append((x, y))
                         
                         if current_path:
                             paths.append(current_path)
@@ -145,73 +135,64 @@ class FontParser:
                         
                         # Scale paths to our coordinate system
                         scaled_paths = []
-                        try:
-                            for path_idx, path in enumerate(paths):
-                                scaled_path = []
-                                for x, y in path:
-                                    # Scale paths to fit within normalized coordinate system (0-30 units)
-                                    # Use a smaller base size for more efficient plotting
-                                    scale_factor = 8 / units_per_em  # Further reduced scale for more compact paths
-                                    scaled_x = round((x * scale_factor), 1)  # Round to 1 decimal place
-                                    scaled_y = round(8 - (y * scale_factor * 0.8), 1)  # Further reduced y-range and scale
-                                    # Only add point if it's significantly different from the last one
-                                    if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
-                                        scaled_path.append((scaled_x, scaled_y))
-                                        logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
-                                # Validate path points and deduplicate
-                                if len(scaled_path) >= 2:
-                                    # Ensure all coordinates are within valid range
-                                    valid_path = True
-                                    last_point = None
-                                    deduped_path = []
-                                    
-                                    for point in scaled_path:
-                                        # Validate coordinate range
-                                        if not (0 <= point[0] <= 30 and 0 <= point[1] <= 30):
-                                            logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
-                                            valid_path = False
-                                            break
-                                            
-                                        # Deduplicate consecutive identical points
-                                        if last_point is None or point != last_point:
-                                            deduped_path.append(point)
-                                            last_point = point
-                                    
-                                    if valid_path and len(deduped_path) >= 2:
-                                        # Only add if path is not already present
-                                        path_str = str(deduped_path)
-                                        if path_str not in set(str(p) for p in scaled_paths):
-                                            scaled_paths.append(deduped_path)
-                                            logger.debug(f"Added unique path for '{char_str}' with {len(deduped_path)} points")
-                                    
-                            logger.debug(f"Converted {len(scaled_paths)} scaled paths for '{char_str}'")
-                            self.font_data[char_str] = scaled_paths
+                        for path in paths:
+                            scaled_path = []
+                            for x, y in path:
+                                # Scale paths to fit within normalized coordinate system
+                                scale_factor = 8 / units_per_em  # Further reduced scale for more compact paths
+                                scaled_x = round((x * scale_factor), 1)  # Round to 1 decimal place
+                                scaled_y = round(8 - (y * scale_factor * 0.8), 1)  # Further reduced y-range and scale
+                                # Only add point if it's significantly different from the last one
+                                if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
+                                    scaled_path.append((scaled_x, scaled_y))
+                                    logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
                             
-                        except Exception as e:
-                            logger.error(f"Error scaling paths for '{char_str}': {e}")
-                            
+                            # Validate path points and deduplicate
+                            if len(scaled_path) >= 2:
+                                valid_path = True
+                                last_point = None
+                                deduped_path = []
+                                
+                                for point in scaled_path:
+                                    # Validate coordinate range
+                                    if not (0 <= point[0] <= 30 and 0 <= point[1] <= 30):
+                                        logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
+                                        valid_path = False
+                                        break
+                                        
+                                    # Deduplicate consecutive identical points
+                                    if last_point is None or point != last_point:
+                                        deduped_path.append(point)
+                                        last_point = point
+                                
+                                if valid_path and len(deduped_path) >= 2:
+                                    # Only add if path is not already present
+                                    path_str = str(deduped_path)
+                                    if path_str not in set(str(p) for p in scaled_paths):
+                                        scaled_paths.append(deduped_path)
+                                        logger.debug(f"Added unique path for '{char_str}' with {len(deduped_path)} points")
+                        
+                        logger.debug(f"Converted {len(scaled_paths)} scaled paths for '{char_str}'")
+                        self.font_data[char_str] = scaled_paths
+                        
                 except Exception as e:
                     logger.error(f"Error processing character '{char_str}': {e}")
             
-            logger.info(f"Created development font with {len(self.font_data)} characters")
+            logger.info(f"Created font with {len(self.font_data)} characters")
             
         except Exception as e:
             logger.error(f"Error loading font: {str(e)}")
             # Provide minimal fallback in case of complete failure
             self.font_data = {' ': []}
             raise
-            
-        except Exception as e:
-            logger.error(f"Error loading font file: {str(e)}")
-            raise
-    
-    def get_text_paths(self, text: str, font_size: int) -> List[List[Dict[str, float]]]:
-        """Convert text to plottable paths using the loaded font
+
+    def get_text_paths(self, text: str, font_size: int) -> List[Dict[str, float]]:
+        """Convert text to plottable paths
         
         Args:
             text: The text to convert
             font_size: Font size in points
-        
+            
         Returns:
             List of paths, where each path is a list of points
         """
@@ -226,7 +207,7 @@ class FontParser:
         
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
-        # Calculate scale and dimensions
+        # Calculate scale and dimensions for preview canvas
         base_size = 5  # Base size for characters
         scale = (font_size / 12) * (base_size / 8)  # Scale relative to base size
         char_width = base_size * scale  # Individual character width
@@ -240,38 +221,72 @@ class FontParser:
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, word_spacing={word_spacing}, letter_spacing={letter_spacing}, max_width={max_width}")
         
-        logger.debug(f"Converting text: '{text}' at font size {font_size}")
-        logger.debug(f"Scale: {scale}, Mistake frequency: {self.mistake_frequency}")
-        
-        # Split text into lines (handle manual line breaks)
-        lines = text.split('\n')
-        for line in lines:
-            # Process each line separately
-            words = line.split()
-            current_line = []
-            line_start_x = x_pos
-            current_x = x_pos
-        
         # Track mistakes for strike-through
         mistakes_to_strike = []
         
-        for word in words:
-            # Generate potential mistake
-            modified_word, is_mistake = self.generate_mistake(word)
-            word_width = len(modified_word) * char_width * 1.2
+        # Process each line from input text
+        lines = text.split('\n')
+        for line_text in lines:
+            # Reset x position for new line
+            current_x = x_pos
+            line_start_x = x_pos
+            current_line = []
             
-            # Calculate total width needed for this word including spacing
-            total_width = word_width + (word_spacing if current_line else 0)
-            
-            # Calculate word width including potential spacing
-            word_width = len(modified_word) * (char_width + letter_spacing)
-            total_width = word_width + (word_spacing if current_line else 0)
-            
-            # Check if word fits on current line
-            if current_x + total_width > max_width and current_line:
-                logger.debug(f"Word wrap needed at x={current_x}, width={total_width}, max={max_width}")
+            # Process words in current line
+            words = line_text.split()
+            for word in words:
+                # Generate potential mistake
+                modified_word, is_mistake = self.generate_mistake(word)
                 
-                # Render current line
+                # Calculate total width needed for this word including spacing
+                word_width = len(modified_word) * (char_width + letter_spacing)
+                total_width = word_width + (word_spacing if current_line else 0)
+                
+                # Check if word fits on current line
+                if current_x + total_width > max_width and current_line:
+                    # Render current line before starting new one
+                    render_x = line_start_x
+                    for w in current_line:
+                        # Add word spacing if not first word
+                        if render_x > line_start_x:
+                            render_x += word_spacing
+                        
+                        # Render each character
+                        for char in w:
+                            char_paths = self.font_data.get(char, [[(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]])
+                            for stroke in char_paths:
+                                path = []
+                                for x, y in stroke:
+                                    scaled_x = render_x + (x * scale)
+                                    scaled_y = y_pos + (y * scale)
+                                    path.append({'x': scaled_x, 'y': scaled_y})
+                                if len(path) >= 2:
+                                    paths.append(path)
+                            render_x += char_width + letter_spacing
+                    
+                    # Start new line
+                    y_pos += char_height * 1.2
+                    current_x = x_pos
+                    current_line = [modified_word]
+                    logger.debug(f"Word wrap: moving to new line at y={y_pos}")
+                else:
+                    # Add word to current line
+                    current_line.append(modified_word)
+                
+                # Track mistake if generated
+                if is_mistake:
+                    logger.debug(f"Tracking mistake: '{modified_word}' at x={current_x}, y={y_pos}")
+                    mistakes_to_strike.append({
+                        'x': current_x,
+                        'y': y_pos,
+                        'width': word_width
+                    })
+                
+                # Update position for next word
+                current_x += word_width + word_spacing
+            
+            # Render final line
+            if current_line:
                 render_x = line_start_x
                 for w in current_line:
                     # Add word spacing if not first word
@@ -290,54 +305,8 @@ class FontParser:
                             if len(path) >= 2:
                                 paths.append(path)
                         render_x += char_width + letter_spacing
-                
-                # Move to next line
-                y_pos += char_height * 1.2
-                current_line = []
-                line_start_x = x_pos
-                current_x = x_pos
-                logger.debug(f"Moving to new line at y={y_pos}")
             
-            # Add word to current line
-            current_line.append(modified_word)
-            
-            # Track mistake if generated
-            if is_mistake:
-                logger.debug(f"Tracking mistake: '{modified_word}' at x={current_x}, y={y_pos}")
-                mistakes_to_strike.append({
-                    'x': current_x,
-                    'y': y_pos,
-                    'width': word_width
-                })
-            
-            # Update position for next word
-            current_x += word_width + word_spacing
-            logger.debug(f"Updated x position to {current_x} after adding word '{modified_word}'")
-            
-            # Render final line if any words remain
-            if current_line:
-                render_x = line_start_x
-            for w in current_line:
-                # Add word spacing if not first word
-                if render_x > line_start_x:
-                    render_x += word_spacing
-                
-                # Render each character in word
-                for char in w:
-                    char_paths = self.font_data.get(char, [[(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]])
-                    for stroke in char_paths:
-                        path = []
-                        for x, y in stroke:
-                            scaled_x = render_x + (x * scale)
-                            scaled_y = y_pos + (y * scale)
-                            # Only add point if it creates a new segment
-                            if not path or (path[-1]['x'] != scaled_x or path[-1]['y'] != scaled_y):
-                                path.append({'x': scaled_x, 'y': scaled_y})
-                        if len(path) >= 2:
-                            paths.append(path)
-                    render_x += char_width + letter_spacing
-            
-            # After rendering current line, move to next line
+            # Move to next line for manual line breaks
             y_pos += char_height * 1.2
         
         # Add strike-through for mistakes
@@ -348,11 +317,10 @@ class FontParser:
                 {'x': mistake['x'] + mistake['width'], 'y': strike_y + (char_height * 0.1)}
             ]
             paths.append(strike_path)
-            logger.debug(f"Added strike-through at ({mistake['x']}, {strike_y})")
         
         logger.debug(f"Generated {len(paths)} paths with {len(mistakes_to_strike)} mistakes")
         return paths
-    
+
     def get_char_width(self, char: str) -> float:
         """Get the width of a character in font units"""
         # This is a placeholder - implement based on actual font metrics
