@@ -73,12 +73,16 @@ def plot_text():
         
         # Get text paths and plot
         paths = font_parser.get_text_paths(text, font_size)
-        success = axidraw.plot_paths(paths)
+        result = axidraw.plot_paths(paths)
         
-        return jsonify({'success': success})
+        return jsonify(result)
     except Exception as e:
         logger.error(f"Error plotting text: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'simulation_logs': [f"Error: {str(e)}"]
+        }), 500
 
 @app.route('/api/connect', methods=['POST'])
 def connect_axidraw():

@@ -1,6 +1,7 @@
 class AxiDrawController {
     constructor() {
         this.connected = false;
+        this.simulationLog = document.getElementById('simulationLog');
         this.setupEventListeners();
     }
     
@@ -23,6 +24,9 @@ class AxiDrawController {
     
     async connect() {
         try {
+            this.clearSimulationLog();
+            this.addSimulationLog('Attempting to connect to AxiDraw...');
+            
             const response = await fetch('/api/connect', {
                 method: 'POST'
             });
@@ -30,18 +34,22 @@ class AxiDrawController {
             
             if (data.success) {
                 this.connected = true;
-                this.updateStatus('Connected to AxiDraw', 'success');
+                this.updateStatus('Connected to AxiDraw (Development Mode)', 'success');
+                this.addSimulationLog('Connected in development mode - all operations will be simulated');
                 this.updateButtons(true);
             } else {
                 throw new Error(data.error || 'Failed to connect');
             }
         } catch (error) {
             this.updateStatus(`Connection error: ${error.message}`, 'danger');
+            this.addSimulationLog(`Error: ${error.message}`, 'text-danger');
         }
     }
     
     async disconnect() {
         try {
+            this.addSimulationLog('Disconnecting from AxiDraw...');
+            
             const response = await fetch('/api/disconnect', {
                 method: 'POST'
             });
@@ -50,12 +58,14 @@ class AxiDrawController {
             if (data.success) {
                 this.connected = false;
                 this.updateStatus('Disconnected from AxiDraw', 'info');
+                this.addSimulationLog('Disconnected from AxiDraw');
                 this.updateButtons(false);
             } else {
                 throw new Error(data.error || 'Failed to disconnect');
             }
         } catch (error) {
             this.updateStatus(`Disconnection error: ${error.message}`, 'danger');
+            this.addSimulationLog(`Error: ${error.message}`, 'text-danger');
         }
     }
     
@@ -69,6 +79,9 @@ class AxiDrawController {
             }
             
             this.updateStatus('Plotting message...', 'info');
+            this.addSimulationLog('Starting plot simulation...');
+            this.addSimulationLog(`Text: "${text}"`);
+            this.addSimulationLog(`Font size: ${fontSize}pt`);
             
             const response = await fetch('/api/plot', {
                 method: 'POST',
@@ -85,12 +98,26 @@ class AxiDrawController {
             
             if (data.success) {
                 this.updateStatus('Message plotted successfully', 'success');
+                this.addSimulationLog('Plot simulation completed successfully');
             } else {
                 throw new Error(data.error || 'Failed to plot message');
             }
         } catch (error) {
             this.updateStatus(`Plotting error: ${error.message}`, 'danger');
+            this.addSimulationLog(`Error: ${error.message}`, 'text-danger');
         }
+    }
+    
+    clearSimulationLog() {
+        this.simulationLog.innerHTML = '';
+    }
+    
+    addSimulationLog(message, className = '') {
+        const entry = document.createElement('div');
+        entry.className = className;
+        entry.textContent = message;
+        this.simulationLog.appendChild(entry);
+        this.simulationLog.scrollTop = this.simulationLog.scrollHeight;
     }
     
     updateStatus(message, type) {

@@ -81,51 +81,33 @@ class PostcardPreview {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
         
-        const text = document.getElementById('messageText').value;
-        if (!text) return;
-        
-        const fontSize = document.getElementById('fontSize').value;
+        if (!data.plotPaths || !data.plotPaths.length) return;
         
         this.ctx.save();
         
-        // Set up text rendering with a nice pen-like appearance
-        this.ctx.fillStyle = '#1a1a1a';  // Slightly softer than pure black
-        this.ctx.font = `${fontSize}px PremiumUltra`;  // Using our custom font
-        this.ctx.textBaseline = 'top';
+        // Set up path rendering with a pen-like appearance
+        this.ctx.strokeStyle = '#1a1a1a';
+        this.ctx.lineWidth = 1;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
         
-        // Calculate comfortable margins (about 1 inch at 100 DPI)
-        const margin = 100;
-        const x = margin;
-        let y = margin;
-        
-        // Calculate maximum width for text wrapping
-        const maxWidth = this.width - (margin * 2);
-        
-        // Handle text wrapping and rendering
-        const words = text.split(/\s+/);
-        const lineHeight = fontSize * 1.5;
-        let line = '';
-        
-        // Process each word
-        words.forEach(word => {
-            const testLine = line + (line ? ' ' : '') + word;
-            const metrics = this.ctx.measureText(testLine);
+        // Draw each path
+        data.plotPaths.forEach((path, index) => {
+            if (!path || path.length < 2) return;
             
-            if (metrics.width > maxWidth && line !== '') {
-                // Current line is full, render it and start new line
-                this.ctx.fillText(line, x, y, maxWidth);
-                line = word;
-                y += lineHeight;
-            } else {
-                // Add word to current line
-                line = testLine;
+            // Log path info for debugging
+            console.log(`Drawing path ${index}:`, path);
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(path[0].x, path[0].y);
+            
+            // Draw the rest of the points
+            for (let i = 1; i < path.length; i++) {
+                this.ctx.lineTo(path[i].x, path[i].y);
             }
+            
+            this.ctx.stroke();
         });
-        
-        // Draw remaining text
-        if (line) {
-            this.ctx.fillText(line, x, y, maxWidth);
-        }
         
         this.ctx.restore();
     }

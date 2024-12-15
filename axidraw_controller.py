@@ -58,14 +58,14 @@ class AxiDrawController:
             logger.error(f"Error disconnecting from AxiDraw: {str(e)}")
             return False
     
-    def plot_paths(self, paths: List[List[Dict[str, float]]]) -> bool:
+    def plot_paths(self, paths: List[List[Dict[str, float]]]) -> Dict:
         """Plot the given paths using AxiDraw
         
         Args:
             paths: List of paths, where each path is a list of points
         
         Returns:
-            bool: True if plotting successful
+            Dict with success status and simulation details
         """
         try:
             if not self.connected:
@@ -73,19 +73,24 @@ class AxiDrawController:
             
             if self.dev_mode:
                 # Simulate plotting in development mode
-                logger.info("Development mode: Simulating AxiDraw plotting")
-                logger.info("Validating paths and simulating movements...")
+                simulation_logs = []
+                simulation_logs.append("Development mode: Simulating AxiDraw plotting")
+                simulation_logs.append("Validating paths and simulating movements...")
+                
+                total_path_distance = 0
+                total_pen_movements = 0
                 
                 for i, path in enumerate(paths):
                     # Validate path structure
                     if not path:
-                        logger.warning(f"Path {i} is empty, skipping")
+                        simulation_logs.append(f"Warning: Path {i} is empty, skipping")
                         continue
                         
                     # Log movement simulation
                     first_point = path[0]
-                    logger.info(f"Path {i}: Moving to start position ({first_point['x']:.1f}, {first_point['y']:.1f})")
-                    logger.info("Lowering pen")
+                    simulation_logs.append(f"Path {i}: Moving to start position ({first_point['x']:.1f}, {first_point['y']:.1f})")
+                    simulation_logs.append("Lowering pen")
+                    total_pen_movements += 1
                     
                     # Calculate total distance for this path
                     total_distance = 0
@@ -95,16 +100,33 @@ class AxiDrawController:
                         dy = point['y'] - prev_point['y']
                         distance = (dx * dx + dy * dy) ** 0.5
                         total_distance += distance
-                        logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
+                        simulation_logs.append(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
                         prev_point = point
                     
-                    logger.info(f"Path {i}: Total drawing distance: {total_distance:.1f} units")
-                    logger.info("Raising pen")
+                    total_path_distance += total_distance
+                    simulation_logs.append(f"Path {i}: Total drawing distance: {total_distance:.1f} units")
+                    simulation_logs.append("Raising pen")
+                    total_pen_movements += 1
                 
-                # Estimate total plotting time
+                # Calculate estimated plotting time and stats
                 est_time = len(paths) * 2  # Rough estimate: 2 seconds per path
-                logger.info(f"Estimated plotting time: {est_time} seconds")
-                return True
+                simulation_logs.append("-------------------")
+                simulation_logs.append("Plotting Statistics:")
+                simulation_logs.append(f"Total paths: {len(paths)}")
+                simulation_logs.append(f"Total drawing distance: {total_path_distance:.1f} units")
+                simulation_logs.append(f"Total pen movements: {total_pen_movements}")
+                simulation_logs.append(f"Estimated plotting time: {est_time} seconds")
+                
+                return {
+                    'success': True,
+                    'simulation_logs': simulation_logs,
+                    'statistics': {
+                        'total_paths': len(paths),
+                        'total_distance': total_path_distance,
+                        'pen_movements': total_pen_movements,
+                        'estimated_time': est_time
+                    }
+                }
             
             # Real hardware mode
             logger.info("Configuring AxiDraw plotting parameters")
