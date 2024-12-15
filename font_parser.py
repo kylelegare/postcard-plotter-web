@@ -149,28 +149,38 @@ class FontParser:
                             for path_idx, path in enumerate(paths):
                                 scaled_path = []
                                 for x, y in path:
-                                    # For single-line font, maintain exact path proportions
-                                    # Scale to fit within 40x40 units, maintaining stroke precision
-                                    # Scale paths to fit within standard postcard size
-                                    # Use consistent 40-unit base size for both preview and plotting
-                                    scale_factor = 40 / units_per_em
+                                    # Scale paths to fit within standard postcard size (6" x 4")
+                                    # Use a base size of 30 units for better proportions and positioning
+                                    scale_factor = 30 / units_per_em
                                     scaled_x = (x * scale_factor)
-                                    scaled_y = 40 - (y * scale_factor)  # Flip y-coordinate for correct orientation
+                                    scaled_y = 30 - (y * scale_factor)  # Flip y-coordinate for correct orientation
                                     scaled_path.append((scaled_x, scaled_y))
                                     logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
-                                # Validate path points are within bounds and properly formatted
-                                    if len(scaled_path) >= 2:
-                                        # Ensure all coordinates are within valid range (0-40)
-                                        valid_path = True
-                                        for point in scaled_path:
-                                            if not (0 <= point[0] <= 40 and 0 <= point[1] <= 40):
-                                                logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
-                                                valid_path = False
-                                                break
-                                        
-                                        if valid_path:
-                                            scaled_paths.append(scaled_path)
-                                            logger.debug(f"Added valid path for '{char_str}' with {len(scaled_path)} points")
+                                # Validate path points and deduplicate
+                                if len(scaled_path) >= 2:
+                                    # Ensure all coordinates are within valid range
+                                    valid_path = True
+                                    last_point = None
+                                    deduped_path = []
+                                    
+                                    for point in scaled_path:
+                                        # Validate coordinate range
+                                        if not (0 <= point[0] <= 30 and 0 <= point[1] <= 30):
+                                            logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
+                                            valid_path = False
+                                            break
+                                            
+                                        # Deduplicate consecutive identical points
+                                        if last_point is None or point != last_point:
+                                            deduped_path.append(point)
+                                            last_point = point
+                                    
+                                    if valid_path and len(deduped_path) >= 2:
+                                        # Only add if path is not already present
+                                        path_str = str(deduped_path)
+                                        if path_str not in set(str(p) for p in scaled_paths):
+                                            scaled_paths.append(deduped_path)
+                                            logger.debug(f"Added unique path for '{char_str}' with {len(deduped_path)} points")
                                     
                             logger.debug(f"Converted {len(scaled_paths)} scaled paths for '{char_str}'")
                             self.font_data[char_str] = scaled_paths
@@ -215,11 +225,11 @@ class FontParser:
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
         # Calculate scale based on postcard dimensions (6" × 4" at 100 DPI)
-        base_size = 20  # Smaller base size for better proportions
-        scale = (font_size / 12) * (base_size / 40)  # Scale relative to base size
+        base_size = 15  # Further reduced base size for better proportions
+        scale = (font_size / 12) * (base_size / 30)  # Scale relative to reduced base size
         char_width = base_size * scale  # Character width
         char_height = base_size * scale
-        spacing = (base_size / 2) * scale  # Spacing between characters
+        spacing = (base_size / 3) * scale  # Reduced spacing between characters
         max_width = 600 - (margin * 2)  # Max width with margins (100 DPI)
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
@@ -307,13 +317,19 @@ class FontParser:
                     for stroke in char_paths:
                         path = []
                         for x, y in stroke:
-                            # Scale and position the point
-                            scaled_x = render_x + (x * scale)
-                            scaled_y = y_pos + (y * scale)
-                            path.append({
-                                'x': scaled_x,
-                                'y': scaled_y
-                            })
+                            # Scale and position the point, ensuring consistent scaling with preview
+                            # Use relative positioning to maintain proper spacing
+                            rel_x = x * scale
+                            rel_y = y * scale
+                            scaled_x = render_x + rel_x
+                            scaled_y = y_pos + rel_y
+                            
+                            # Add point only if it would create a unique segment
+                            if not path or (path[-1]['x'] != scaled_x or path[-1]['y'] != scaled_y):
+                                path.append({
+                                    'x': scaled_x,
+                                    'y': scaled_y
+                                })
                         if len(path) >= 2:  # Only add valid paths
                             paths.append(path)
                     
