@@ -140,11 +140,17 @@ class FontParser:
                             scaled_path = []
                             for x, y in path:
                                 # Scale and transform coordinates to match AxiDraw workspace
-                                # Scale to fit width while preserving aspect ratio
-                                scale_factor = min(150, 100) / units_per_em  
-                                # Transform to AxiDraw coordinate system (origin at bottom-left)
-                                scaled_x = round(20 + (x * scale_factor), 1)  # Add margin and round
-                                scaled_y = round(20 + (y * scale_factor), 1)  # Add margin and maintain Y direction
+                                # Scale to fit AxiDraw Mini workspace (150x100mm)
+                                # Use conservative scaling with larger margins for safety
+                                safe_width = 100  # Leave 25mm margin on each side
+                                safe_height = 70  # Leave 15mm margin top/bottom
+                                scale_factor = min(safe_width, safe_height) / units_per_em
+                                
+                                # Transform to AxiDraw coordinate system with centered alignment
+                                margin_x = (150 - safe_width) / 2  # Center horizontally
+                                margin_y = (100 - safe_height) / 2  # Center vertically
+                                scaled_x = round(margin_x + (x * scale_factor), 1)
+                                scaled_y = round(margin_y + (y * scale_factor), 1)
                                 # Only add point if it's significantly different from the last one
                                 if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
                                     scaled_path.append((scaled_x, scaled_y))

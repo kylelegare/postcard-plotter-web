@@ -277,12 +277,17 @@ class AxiDrawController:
             # Real hardware mode
             logger.info("Configuring AxiDraw plotting parameters")
             try:
-                # Configure movement parameters
-                self.ad.options.speed_pendown = 25  # Adjust based on needs
-                self.ad.options.speed_penup = 75
-                self.ad.options.accel = 75
-                self.ad.options.pen_pos_down = 40
-                self.ad.options.pen_pos_up = 60
+                # Configure movement parameters for AxiDraw Mini
+                self.ad.options.speed_pendown = 20  # Slower for more precise movements
+                self.ad.options.speed_penup = 60    # Moderate speed for safety
+                self.ad.options.accel = 50          # Lower acceleration for smoother movement
+                self.ad.options.pen_pos_down = 30   # Lighter touch to prevent grinding
+                self.ad.options.pen_pos_up = 60     # Full up position
+                
+                # Set AxiDraw Mini workspace limits
+                self.ad.options.model = 3  # AxiDraw Mini
+                self.ad.options.port = None  # Auto-detect USB port
+                self.ad.options.units = 1  # Use mm units
                 
                 # Home axes before starting plot
                 if not self._home_axes():
@@ -308,8 +313,13 @@ class AxiDrawController:
                         logger.warning(f"Path {i} is empty, skipping")
                         continue
                     
-                    # Move to start of path with pen up
+                    # Validate and move to start of path with pen up
                     first_point = path[0]
+                    # Check if point is within safe workspace bounds
+                    if not (0 <= first_point['x'] <= 150 and 0 <= first_point['y'] <= 100):
+                        logger.warning(f"Path {i}: Start point ({first_point['x']:.1f}, {first_point['y']:.1f}) outside safe workspace")
+                        continue
+                    
                     logger.debug(f"Path {i}: Moving to ({first_point['x']:.1f}, {first_point['y']:.1f})")
                     self.ad.moveto(first_point['x'], first_point['y'])
                     
