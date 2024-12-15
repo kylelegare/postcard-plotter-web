@@ -20,25 +20,41 @@ class FontParser:
             # Create simple character shapes
             # Each character is represented by a series of paths that form its shape
             
+            # Basic single-stroke letters
             # Letter 'A'
             self.font_data['A'] = [
                 [(0, 40), (20, 0), (40, 40)],  # Outer lines
                 [(10, 20), (30, 20)]  # Cross bar
             ]
             
-            # Default shape for other characters - simple rectangle
+            # Letter 'H'
+            self.font_data['H'] = [
+                [(0, 0), (0, 40)],  # Left vertical
+                [(0, 20), (30, 20)],  # Middle bar
+                [(30, 0), (30, 40)]  # Right vertical
+            ]
+            
+            # Letter 'I'
+            self.font_data['I'] = [
+                [(15, 0), (15, 40)]  # Single vertical line
+            ]
+            
+            # Letter 'T'
+            self.font_data['T'] = [
+                [(0, 0), (30, 0)],  # Top bar
+                [(15, 0), (15, 40)]  # Vertical line
+            ]
+            
+            # Default simple single-stroke shapes for other characters
             for char in range(32, 127):  # ASCII printable chars
                 if chr(char) not in self.font_data:
                     char_str = chr(char)
-                    if char_str.isalnum():  # Letters and numbers
-                        self.font_data[char_str] = [
-                            [(0, 0), (30, 0), (30, 40), (0, 40), (0, 0)]  # Rectangle
-                        ]
-                    elif char_str == ' ':
+                    if char_str == ' ':
                         self.font_data[char_str] = []  # Empty path for space
                     else:
+                        # Simple vertical line for unimplemented characters
                         self.font_data[char_str] = [
-                            [(0, 0), (20, 0), (20, 20), (0, 20), (0, 0)]  # Smaller rectangle for symbols
+                            [(15, 0), (15, 40)]
                         ]
             
             logger.info(f"Created development font with {len(self.font_data)} characters")
@@ -90,15 +106,18 @@ class FontParser:
                 line_x = x_pos
                 for char in ' '.join(current_line):
                     if char != ' ':
-                        # Create character path
-                        char_path = [
-                            {'x': line_x, 'y': y_pos},  # Top left
-                            {'x': line_x + char_width, 'y': y_pos},  # Top right
-                            {'x': line_x + char_width, 'y': y_pos + char_height},  # Bottom right
-                            {'x': line_x, 'y': y_pos + char_height},  # Bottom left
-                            {'x': line_x, 'y': y_pos}  # Back to start
-                        ]
-                        paths.append(char_path)
+                        # Get character's stroke paths
+                        char_paths = self.font_data.get(char, self.font_data['I'])
+                        
+                        # Transform and scale each path
+                        for stroke in char_paths:
+                            path = []
+                            for x, y in stroke:
+                                path.append({
+                                    'x': line_x + (x * scale),
+                                    'y': y_pos + (y * scale)
+                                })
+                            paths.append(path)
                     line_x += char_width * 1.2
                 
                 # Move to next line
