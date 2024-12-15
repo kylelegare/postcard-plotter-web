@@ -22,7 +22,8 @@ class AxiDrawController:
         """
         self.ad = None
         self.connected = False
-        self.dev_mode = dev_mode  # Can be set to True to force development mode
+        self.dev_mode = dev_mode
+        logger.info(f"Initializing AxiDraw controller in {'development' if dev_mode else 'hardware'} mode")
     
     def connect(self) -> Dict[str, any]:
         """Connect to AxiDraw device
@@ -48,42 +49,71 @@ class AxiDrawController:
                     'error': 'AxiDraw Python module not installed. Please install the module first using:\npython -m pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip'
                 }
             
-            # Only try hardware connection if not in forced dev mode
+            # In hardware mode, we'll keep trying to connect to the physical device
             if not self.dev_mode:
                 try:
                     logger.info("Attempting to connect to physical AxiDraw device...")
-                    self.ad = axidraw.AxiDraw()
-                    logger.debug("AxiDraw object created")
                     
+                    # Create AxiDraw object
+                    self.ad = axidraw.AxiDraw()
+                    logger.debug("AxiDraw object created successfully")
+                    
+                    # Enable interactive mode
+                    logger.debug("Enabling interactive mode...")
                     self.ad.interactive()
-                    logger.debug("Interactive mode enabled")
+                    logger.debug("Interactive mode enabled successfully")
                     
                     # Connect to the device
+                    logger.debug("Attempting USB connection...")
                     self.ad.connect()
-                    logger.info("Successfully connected to physical AxiDraw device")
+                    logger.info("Successfully established USB connection to AxiDraw device")
                     
-                    # Set connection status
+                    # Test if we can access basic device functions
+                    logger.debug("Testing device communication...")
+                    self.ad.penup()
+                    logger.debug("Pen up command successful")
+                    
+                    # Connection successful, set status
                     self.connected = True
+                    logger.info("Physical AxiDraw device fully connected and responsive")
                     return {
                         'success': True,
                         'message': 'Successfully connected to physical AxiDraw device'
                     }
                 except Exception as e:
-                    logger.error(f"Failed to connect to physical AxiDraw: {str(e)}")
-                    if not self.dev_mode:
+                    error_msg = str(e)
+                    logger.error(f"Failed to connect to physical AxiDraw: {error_msg}")
+                    
+                    if "no module named" in error_msg.lower():
                         return {
                             'success': False,
-                            'error': f'Could not connect to AxiDraw device. Please check:\n1. USB connection\n2. Device power\n3. Correct drivers installed\nError: {str(e)}'
+                            'error': 'AxiDraw Python module not properly installed. Please run:\npython -m pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.zip'
+                        }
+                    elif "could not open" in error_msg.lower() or "failed to open" in error_msg.lower():
+                        return {
+                            'success': False,
+                            'error': 'Could not open USB connection. Please check:\n1. USB cable is properly connected\n2. AxiDraw is powered on\n3. No other software is currently using the device'
+                        }
+                    else:
+                        return {
+                            'success': False,
+                            'error': f'Connection failed: {error_msg}\nPlease ensure:\n1. USB connection is secure\n2. Device is powered on\n3. Correct drivers are installed'
                         }
             
-            # Fall back to dev mode if requested or if hardware connection failed
+            # Only use development mode if explicitly requested
             if self.dev_mode:
-                logger.info("Running in development mode as requested")
+                logger.info("Running in development mode as explicitly requested")
                 self.connected = True
                 return {
                     'success': True,
                     'message': 'Connected in development mode (simulation only)'
                 }
+            
+            # If we get here, something unexpected happened
+            return {
+                'success': False,
+                'error': 'Unexpected error during connection attempt'
+            }
                 
         except Exception as e:
             logger.error(f"Error connecting to AxiDraw: {str(e)}")

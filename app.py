@@ -22,8 +22,9 @@ def after_request(response):
     return response
 
 # Initialize AxiDraw controller and font parser
-# Set dev_mode=True only if you want to force development mode
-axidraw = AxiDrawController(dev_mode=False)  # Force hardware mode, requires pyaxidraw module
+# Explicitly set hardware mode and configure logging
+logging.getLogger('axidraw_controller').setLevel(logging.DEBUG)
+axidraw = AxiDrawController(dev_mode=False)  # Hardware mode only
 font_parser = FontParser()
 
 @app.route('/')
