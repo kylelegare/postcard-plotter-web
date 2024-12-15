@@ -1,8 +1,35 @@
 class PostcardPreview {
+// Font loading observer
+class FontLoadObserver {
+    static async waitForFont(fontFamily) {
+        const font = new FontFace(fontFamily, `url('/static/fonts/PremiumUltra54.ttf')`);
+        try {
+            await font.load();
+            document.fonts.add(font);
+            return true;
+        } catch (error) {
+            console.error('Font loading error:', error);
+            return false;
+        }
+    }
+}
+
     constructor() {
         this.canvas = document.getElementById('previewCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.socket = io();
+        
+        // Wait for font to load before initializing
+        FontLoadObserver.waitForFont('PremiumUltra').then(() => {
+            console.log('PremiumUltra font loaded');
+            this.setupCanvas();
+        }).catch(err => {
+            console.warn('Font loading failed, falling back to system font:', err);
+            this.setupCanvas();
+        });
+    }
+    
+    setupCanvas() {
         
         // Postcard dimensions (6" × 4" at 100 DPI)
         this.width = 600;
