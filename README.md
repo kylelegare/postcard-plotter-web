@@ -26,6 +26,33 @@ A web interface for controlling AxiDraw Mini to write text on postcards with cus
 1. Clone this repository:
 ```bash
 git clone https://github.com/yourusername/postcard-plotter-web.git
+### GitHub Setup
+
+1. Initialize Git repository:
+```bash
+git init
+```
+
+2. Add your GitHub credentials:
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+```
+
+3. Create a new repository on GitHub:
+- Go to https://github.com/new
+- Name your repository (e.g., "postcard-plotter-web")
+- Leave it empty (no README, no license) 
+
+4. Connect and push to GitHub:
+```bash
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/postcard-plotter-web.git
+git push -u origin main
+```
+
 cd postcard-plotter-web
 ```
 
