@@ -179,10 +179,19 @@ class AxiDrawController:
         """
         try:
             logger.info("Homing AxiDraw axes...")
-            # Ensure pen is up before any movement
+            # First ensure pen is up with extra delay
             self.ad.penup()
-            # Move to physical home position (0,0)
-            self.ad.goto(0, 0)
+            self.ad.delay(500)  # Longer delay for pen up
+            
+            # Move to 0,0 in steps
+            logger.debug("Moving to origin...")
+            self.ad.moveto(0, 0)
+            self.ad.delay(500)  # Wait for movement
+            
+            # Double check pen is up
+            self.ad.penup()
+            self.ad.delay(200)
+            
             logger.info("Successfully homed AxiDraw")
             return True
         except Exception as e:
@@ -278,11 +287,13 @@ class AxiDrawController:
             logger.info("Configuring AxiDraw plotting parameters")
             try:
                 # Configure movement parameters for AxiDraw Mini
-                self.ad.options.speed_pendown = 20  # Slower for more precise movements
-                self.ad.options.speed_penup = 60    # Moderate speed for safety
-                self.ad.options.accel = 50          # Lower acceleration for smoother movement
-                self.ad.options.pen_pos_down = 30   # Lighter touch to prevent grinding
+                self.ad.options.speed_pendown = 15  # Very slow for maximum precision
+                self.ad.options.speed_penup = 40    # Conservative speed for safety
+                self.ad.options.accel = 30          # Lower acceleration for smoother movement
+                self.ad.options.pen_pos_down = 25   # Very light touch to prevent grinding
                 self.ad.options.pen_pos_up = 60     # Full up position
+                self.ad.options.pen_delay_down = 400  # Extra delay for pen down
+                self.ad.options.pen_delay_up = 400    # Extra delay for pen up
                 
                 # Set AxiDraw Mini workspace limits
                 self.ad.options.model = 3  # AxiDraw Mini
@@ -315,28 +326,58 @@ class AxiDrawController:
                     
                     # Validate and move to start of path with pen up
                     first_point = path[0]
-                    # Check if point is within safe workspace bounds
-                    if not (0 <= first_point['x'] <= 150 and 0 <= first_point['y'] <= 100):
+                    # Check if point is within safe workspace bounds (with margins)
+                    if not (20 <= first_point['x'] <= 130 and 20 <= first_point['y'] <= 80):
                         logger.warning(f"Path {i}: Start point ({first_point['x']:.1f}, {first_point['y']:.1f}) outside safe workspace")
                         continue
                     
-                    logger.debug(f"Path {i}: Moving to ({first_point['x']:.1f}, {first_point['y']:.1f})")
+                    # Always start from home position for each path
+                    logger.info("Initializing new path sequence...")
+                    if not self._home_axes():
+                        logger.error("Failed to home axes before path")
+                        continue
+                        
+                    # Ensure pen is fully up with extended delay
+                    self.ad.penup()
+                    self.ad.delay(800)  # Extra long delay for safety
+                    
+                    # Move to start position in two steps for smoother movement
+                    logger.debug(f"Moving to start position ({first_point['x']:.1f}, {first_point['y']:.1f})")
+                    # First move Y coordinate
+                    self.ad.moveto(0, first_point['y'])
+                    self.ad.delay(500)
+                    # Then move X coordinate
                     self.ad.moveto(first_point['x'], first_point['y'])
+                    self.ad.delay(800)  # Extended delay for precise positioning
                     
-                    # Lower pen to draw
+                    # Lower pen with extended delay
+                    logger.debug("Lowering pen...")
                     self.ad.pendown()
+                    self.ad.delay(500)  # Extended delay for pen down
                     
-                    # Draw path
+                    # Draw path with delays between points
                     for point in path[1:]:
                         logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
                         self.ad.lineto(point['x'], point['y'])
+                        self.ad.delay(100)  # Small delay between line segments
                     
-                    # Lift pen after path
+                    # Lift pen and wait
                     self.ad.penup()
+                    self.ad.delay(500)
+                    
+                    # Return to home position in two steps
+                    logger.debug("Returning to home position...")
+                    # First move X to 0
+                    self.ad.moveto(0, path[-1]['y'])
+                    self.ad.delay(500)
+                    # Then move Y to 0
+                    self.ad.moveto(0, 0)
+                    self.ad.delay(500)
                 
-                # Return to home position after plotting
-                logger.info("Plotting complete, returning to home position")
-                self._home_axes()
+                # Final home position check after all paths
+                logger.info("Plotting complete, ensuring home position")
+                if not self._home_axes():
+                    logger.warning("Final home position check failed")
                 
                 return {
                     'success': True,

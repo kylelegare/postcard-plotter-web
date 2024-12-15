@@ -1,18 +1,31 @@
+# Configure eventlet first
+import eventlet
+eventlet.monkey_patch()
+
+# Standard library imports
 import os
 import logging
+import traceback
+
+# Configure logging before other imports
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Third-party imports
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO
+
+# Local imports
 from axidraw_controller import AxiDrawController
 from font_parser import FontParser
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 # Initialize Flask app with explicit static folder config
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='eventlet', logger=True, engineio_logger=True)
 
 # Add logging for static file requests
 @app.after_request
@@ -133,4 +146,28 @@ def disconnect_axidraw():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=True, log_output=True)
+    try:
+        logger.info("Initializing Flask server...")
+        # Ensure static folders exist
+        os.makedirs('static', exist_ok=True)
+        os.makedirs('templates', exist_ok=True)
+        
+        # Initialize application components
+        logger.info("Initializing AxiDraw controller and font parser...")
+        axidraw = AxiDrawController(dev_mode=False)  # Hardware mode enabled
+        font_parser = FontParser()
+        
+        logger.info("Starting server on port 5000...")
+        socketio.run(
+            app,
+            host='0.0.0.0',
+            port=5000,
+            debug=True,
+            use_reloader=False,
+            log_output=True
+        )
+    except Exception as e:
+        logger.error(f"Failed to start server: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise

@@ -141,14 +141,14 @@ class FontParser:
                             for x, y in path:
                                 # Scale and transform coordinates to match AxiDraw workspace
                                 # Scale to fit AxiDraw Mini workspace (150x100mm)
-                                # Use conservative scaling with larger margins for safety
-                                safe_width = 100  # Leave 25mm margin on each side
-                                safe_height = 70  # Leave 15mm margin top/bottom
-                                scale_factor = min(safe_width, safe_height) / units_per_em
+                                # Use extremely conservative scaling with larger margins for safety
+                                safe_width = 50   # Leave 50mm margin on each side
+                                safe_height = 30  # Leave 35mm margin top/bottom
+                                scale_factor = min(safe_width, safe_height) / units_per_em * 0.6  # Additional 40% reduction
                                 
-                                # Transform to AxiDraw coordinate system with centered alignment
-                                margin_x = (150 - safe_width) / 2  # Center horizontally
-                                margin_y = (100 - safe_height) / 2  # Center vertically
+                                # Transform to AxiDraw coordinate system with fixed margins
+                                margin_x = 50  # Fixed left margin
+                                margin_y = 40  # Fixed top margin
                                 scaled_x = round(margin_x + (x * scale_factor), 1)
                                 scaled_y = round(margin_y + (y * scale_factor), 1)
                                 # Only add point if it's significantly different from the last one
