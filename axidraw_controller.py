@@ -298,19 +298,26 @@ class AxiDrawController:
             # Real hardware mode
             logger.info("Configuring AxiDraw plotting parameters")
             try:
-                # Configure movement parameters for AxiDraw Mini
-                self.ad.options.speed_pendown = 15  # Very slow for maximum precision
-                self.ad.options.speed_penup = 40    # Conservative speed for safety
-                self.ad.options.accel = 30          # Lower acceleration for smoother movement
-                self.ad.options.pen_pos_down = 25   # Very light touch to prevent grinding
-                self.ad.options.pen_pos_up = 60     # Full up position
-                self.ad.options.pen_delay_down = 400  # Extra delay for pen down
-                self.ad.options.pen_delay_up = 400    # Extra delay for pen up
+                # Configure movement parameters specifically for AxiDraw Mini postcard writing
+                self.ad.options.speed_pendown = 10    # Very slow for precise writing
+                self.ad.options.speed_penup = 25      # Conservative speed for safety
+                self.ad.options.accel = 20           # Lower acceleration for smooth writing
+                self.ad.options.pen_pos_down = 40    # Light touch for writing
+                self.ad.options.pen_pos_up = 75      # Full up position
+                self.ad.options.pen_delay_down = 500  # Extra delay for consistent writing
+                self.ad.options.pen_delay_up = 400    # Standard delay for pen up
                 
-                # Set AxiDraw Mini workspace limits
-                self.ad.options.model = 3  # AxiDraw Mini
-                self.ad.options.port = None  # Auto-detect USB port
-                self.ad.options.units = 1  # Use mm units
+                # Configure AxiDraw Mini specific settings
+                self.ad.options.model = 3           # AxiDraw Mini model
+                self.ad.options.port = None         # Auto-detect USB port
+                self.ad.options.units = 1           # Use mm units
+                self.ad.options.const_speed = True  # Enable constant speed for better writing
+                
+                # Define workspace limits for postcard
+                self.WORKSPACE_MIN_X = 10   # mm from left edge
+                self.WORKSPACE_MAX_X = 95   # mm (105mm total width - margins)
+                self.WORKSPACE_MIN_Y = 10   # mm from bottom edge
+                self.WORKSPACE_MAX_Y = 50   # mm (60mm total height - margins)
                 
                 # Home axes before starting plot
                 if not self._home_axes():
@@ -338,9 +345,14 @@ class AxiDrawController:
                     
                     # Validate and move to start of path with pen up
                     first_point = path[0]
-                    # Check if point is within safe workspace bounds (with margins)
-                    if not (20 <= first_point['x'] <= 130 and 20 <= first_point['y'] <= 80):
-                        logger.warning(f"Path {i}: Start point ({first_point['x']:.1f}, {first_point['y']:.1f}) outside safe workspace")
+                    # Validate point is within postcard workspace bounds
+                    if not (self.WORKSPACE_MIN_X <= first_point['x'] <= self.WORKSPACE_MAX_X and 
+                           self.WORKSPACE_MIN_Y <= first_point['y'] <= self.WORKSPACE_MAX_Y):
+                        logger.warning(
+                            f"Path {i}: Point ({first_point['x']:.1f}, {first_point['y']:.1f}) outside "
+                            f"safe workspace bounds ({self.WORKSPACE_MIN_X}-{self.WORKSPACE_MAX_X}, "
+                            f"{self.WORKSPACE_MIN_Y}-{self.WORKSPACE_MAX_Y})"
+                        )
                         continue
                     
                     # Always start from home position for each path
