@@ -8,16 +8,18 @@ class PostcardPreview {
         this.width = 600;
         this.height = 400;
         
-        // Set canvas dimensions
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-        
-        // Enable high DPI rendering
+        // Handle high DPI displays
         const dpr = window.devicePixelRatio || 1;
-        const rect = this.canvas.getBoundingClientRect();
         
-        this.canvas.width = rect.width * dpr;
-        this.canvas.height = rect.height * dpr;
+        // Set display size (css pixels)
+        this.canvas.style.width = this.width + 'px';
+        this.canvas.style.height = this.height + 'px';
+        
+        // Set actual size in memory (scaled for retina)
+        this.canvas.width = this.width * dpr;
+        this.canvas.height = this.height * dpr;
+        
+        // Scale all drawing operations by the dpr
         this.ctx.scale(dpr, dpr);
         
         this.setupEventListeners();
@@ -122,23 +124,30 @@ class PostcardPreview {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(10, 10, this.width - 20, this.height - 20);
         
-        if (!data || !data.text) {
+        if (!data || !data.plotPaths || !data.plotPaths.length) {
+            console.log("No valid plot paths provided");
             this.ctx.restore();
             return;
         }
         
-        // Set up text rendering with PremiumUltra font
-        this.ctx.fillStyle = '#000000';
-        this.ctx.font = `${data.fontSize}px PremiumUltra`;
-        this.ctx.textBaseline = 'top';
+        // Draw each path
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 1;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
         
-        // Calculate text position (50px margin)
-        const margin = 50;
-        const x = margin;
-        const y = margin;
-        
-        // Draw the text for preview
-        this.ctx.fillText(data.text, x, y);
+        for (const path of data.plotPaths) {
+            if (path.length < 2) continue;
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(path[0].x, path[0].y);
+            
+            for (let i = 1; i < path.length; i++) {
+                this.ctx.lineTo(path[i].x, path[i].y);
+            }
+            
+            this.ctx.stroke();
+        }
         
         this.ctx.restore();
     }
