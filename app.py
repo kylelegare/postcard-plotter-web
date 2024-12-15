@@ -31,10 +31,12 @@ def after_request(response):
     return response
 
 # Initialize AxiDraw controller and font parser
-# Enable development mode for testing sequence
 logging.getLogger('axidraw_controller').setLevel(logging.DEBUG)
-axidraw = AxiDrawController(dev_mode=True)  # Development mode for testing
+axidraw = AxiDrawController(dev_mode=None)  # Auto-detect hardware/development mode
 font_parser = FontParser()
+
+# Log initialization status
+logger.info(f"AxiDraw controller initialized in {'development' if axidraw.dev_mode else 'hardware'} mode")
 
 @app.route('/')
 def index():

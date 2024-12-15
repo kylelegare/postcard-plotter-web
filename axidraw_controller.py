@@ -14,16 +14,28 @@ except ImportError as e:
     AXIDRAW_AVAILABLE = False
 
 class AxiDrawController:
-    def __init__(self, dev_mode=False):
+    def __init__(self, dev_mode=None):
         """Initialize AxiDraw controller
         
         Args:
-            dev_mode (bool): If True, run in development mode (simulation only)
+            dev_mode (bool): If True, force development mode. If None, auto-detect hardware.
         """
         self.ad = None
         self.connected = False
-        self.dev_mode = dev_mode
-        logger.info(f"Initializing AxiDraw controller in {'development' if dev_mode else 'hardware'} mode")
+        
+        # Auto-detect if dev_mode not specified
+        if dev_mode is None:
+            try:
+                from pyaxidraw import axidraw
+                self.ad = axidraw.AxiDraw()
+                self.dev_mode = False
+                logger.info("Hardware detected, initializing in hardware mode")
+            except (ImportError, Exception) as e:
+                logger.info(f"No hardware detected ({str(e)}), falling back to development mode")
+                self.dev_mode = True
+        else:
+            self.dev_mode = dev_mode
+            logger.info(f"Explicitly set to {'development' if dev_mode else 'hardware'} mode")
     
     def connect(self) -> Dict[str, any]:
         """Connect to AxiDraw device
