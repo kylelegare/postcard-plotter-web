@@ -22,7 +22,8 @@ def after_request(response):
     return response
 
 # Initialize AxiDraw controller and font parser
-axidraw = AxiDrawController()
+# Set dev_mode=True only if you want to force development mode
+axidraw = AxiDrawController(dev_mode=False)  # Default to hardware mode
 font_parser = FontParser()
 
 @app.route('/')

@@ -11,11 +11,15 @@ except ImportError:
     AXIDRAW_AVAILABLE = False
 
 class AxiDrawController:
-    def __init__(self):
-        """Initialize AxiDraw controller"""
+    def __init__(self, dev_mode=False):
+        """Initialize AxiDraw controller
+        
+        Args:
+            dev_mode (bool): If True, run in development mode (simulation only)
+        """
         self.ad = None
         self.connected = False
-        self.dev_mode = False  # Default to attempting hardware connection
+        self.dev_mode = dev_mode  # Can be set to True to force development mode
     
     def connect(self) -> Dict[str, any]:
         """Connect to AxiDraw device
@@ -49,14 +53,19 @@ class AxiDrawController:
                     'message': 'Connected to physical AxiDraw device'
                 }
             except Exception as e:
-                logger.warning(f"Could not connect to physical AxiDraw: {str(e)}")
-                logger.info("Falling back to development mode")
-                self.dev_mode = True
-                self.connected = True
-                return {
-                    'success': True,
-                    'message': 'Connected in development mode - no physical device found'
-                }
+                logger.error(f"Could not connect to physical AxiDraw: {str(e)}")
+                if self.dev_mode:
+                    logger.info("Running in development mode as requested")
+                    self.connected = True
+                    return {
+                        'success': True,
+                        'message': 'Connected in development mode (simulation only)'
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': 'No AxiDraw device found. Please check USB connection and device power.'
+                    }
                 
         except Exception as e:
             logger.error(f"Error connecting to AxiDraw: {str(e)}")
