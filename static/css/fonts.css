@@ -1,7 +1,13 @@
-/* Use a monospace font for preview that approximates the final look */
-.preview-text {
-    font-family: monospace;
+@font-face {
+    font-family: 'PremiumUltra';
+    src: url('../fonts/PremiumUltra54.ttf') format('truetype');
     font-weight: normal;
-    letter-spacing: 0.05em;
+    font-style: normal;
+    font-display: swap;
+}
+
+.preview-text {
+    font-family: 'PremiumUltra', sans-serif;
+    font-weight: normal;
     line-height: 1.2;
 }

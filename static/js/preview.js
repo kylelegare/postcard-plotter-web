@@ -127,9 +127,9 @@ class PostcardPreview {
             return;
         }
         
-        // Set up text rendering
+        // Set up text rendering with PremiumUltra font
         this.ctx.fillStyle = '#000000';
-        this.ctx.font = `${data.fontSize}px monospace`;
+        this.ctx.font = `${data.fontSize}px PremiumUltra`;
         this.ctx.textBaseline = 'top';
         
         // Calculate text position (50px margin)
