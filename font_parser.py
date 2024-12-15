@@ -224,7 +224,7 @@ class FontParser:
             paths.append(strike_path)
             logger.debug(f"Added strike-through at y={strike_y} with width={mistake['width']}")
         
-        logger.debug(f"Generated {len(paths)} paths ({len(mistake_ranges)} mistakes)")
+        logger.debug(f"Generated {len(paths)} paths ({len(mistake_positions)} mistakes)")
         return paths
     
     def get_char_width(self, char: str) -> float:

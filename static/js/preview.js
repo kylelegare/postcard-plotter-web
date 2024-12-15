@@ -45,7 +45,7 @@ class PostcardPreview {
     
     setupWebSocket() {
         this.socket.on('preview_update', (data) => {
-            this.drawPaths(data.paths);
+            this.drawPaths(data.plotPaths);
         });
     }
     
