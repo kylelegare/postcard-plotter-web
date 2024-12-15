@@ -214,12 +214,13 @@ class FontParser:
         
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
-        # Base size is 40 units, scale everything relative to requested font size
-        scale = font_size / 12  # Increase base size for better visibility
-        char_width = 40 * scale  # Wider character width
-        char_height = 40 * scale
-        spacing = 15 * scale  # Increase spacing between characters
-        max_width = 600 - (margin * 2)  # Max width with margins
+        # Calculate scale based on postcard dimensions (6" × 4" at 100 DPI)
+        base_size = 20  # Smaller base size for better proportions
+        scale = (font_size / 12) * (base_size / 40)  # Scale relative to base size
+        char_width = base_size * scale  # Character width
+        char_height = base_size * scale
+        spacing = (base_size / 2) * scale  # Spacing between characters
+        max_width = 600 - (margin * 2)  # Max width with margins (100 DPI)
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
         
