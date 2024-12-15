@@ -43,36 +43,34 @@ class PostcardPreview {
         });
     }
     
-    drawPaths(paths) {
+    drawPaths(data) {
         // Clear canvas with white background
         this.ctx.fillStyle = 'white';
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        if (!paths || paths.length === 0) {
-            return;
-        }
+        const text = document.getElementById('messageText').value;
+        if (!text) return;
+        
+        const fontSize = document.getElementById('fontSize').value;
         
         this.ctx.save();
         
+        // Set up text rendering
+        this.ctx.fillStyle = '#000';
+        this.ctx.font = `${fontSize}px Arial`;
+        this.ctx.textBaseline = 'top';
+        
         // Position text with comfortable margins
-        this.ctx.translate(50, 100);
+        const x = 50;
+        let y = 50;
         
-        // Draw text paths with a pen-like appearance
-        this.ctx.strokeStyle = '#000';  // Black ink color
-        this.ctx.lineWidth = 2;  // Slightly thicker for better visibility
+        // Split text into lines and render
+        const lines = text.split('\n');
+        const lineHeight = fontSize * 1.5;
         
-        paths.forEach(path => {
-            if (!path || path.length === 0) return;
-            
-            this.ctx.beginPath();
-            path.forEach((point, index) => {
-                if (index === 0) {
-                    this.ctx.moveTo(point.x, point.y);
-                } else {
-                    this.ctx.lineTo(point.x, point.y);
-                }
-            });
-            this.ctx.stroke();
+        lines.forEach(line => {
+            this.ctx.fillText(line, x, y);
+            y += lineHeight;
         });
         
         this.ctx.restore();

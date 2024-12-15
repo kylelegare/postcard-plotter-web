@@ -41,13 +41,10 @@ def handle_text_update(data):
     
     logger.debug(f"Received text update: text='{text}', fontSize={font_size}")
     
-    # Process text with font parser
-    text_paths = font_parser.get_text_paths(text, font_size)
-    logger.debug(f"Generated paths: {text_paths}")
-    
+    # For now, just echo back the text and font size
     preview_data = {
-        'paths': text_paths,
-        'bounds': font_parser.get_text_bounds(text, font_size)
+        'text': text,
+        'fontSize': font_size
     }
     logger.debug(f"Sending preview data: {preview_data}")
     
