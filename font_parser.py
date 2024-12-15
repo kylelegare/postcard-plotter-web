@@ -64,38 +64,68 @@ class FontParser:
             List of paths, where each path is a list of points
         """
         paths = []
-        x_pos = 0
-        y_pos = 0
+        margin = 100  # 1-inch margin at 100 DPI
+        x_pos = margin
+        y_pos = margin
         
         # Base size is 40 units, scale everything relative to requested font size
         scale = font_size / 40
         char_width = 30 * scale
         char_height = 40 * scale
+        max_width = 600 - (margin * 2)  # Max width with margins
         
         logger.debug(f"Converting text: '{text}' at font size {font_size} (scale: {scale})")
         
-        for char in text:
-            if char == '\n':
-                x_pos = 0
-                y_pos += char_height * 1.5
-                continue
-                
-            # For every character, create a simple box path
-            box_path = []
-            if char != ' ':
-                # Create a box shape for the character
-                box_path = [
-                    {'x': x_pos, 'y': y_pos},  # Top left
-                    {'x': x_pos + char_width, 'y': y_pos},  # Top right
-                    {'x': x_pos + char_width, 'y': y_pos + char_height},  # Bottom right
-                    {'x': x_pos, 'y': y_pos + char_height},  # Bottom left
-                    {'x': x_pos, 'y': y_pos}  # Back to start
-                ]
-                paths.append(box_path)
-                logger.debug(f"Generated box path for '{char}' at position ({x_pos}, {y_pos})")
+        # Split text into words for wrapping
+        words = text.split()
+        current_line = []
+        current_width = 0
+        
+        for word in words:
+            word_width = len(word) * char_width * 1.2  # Include character spacing
             
-            # Move to next character position
-            x_pos += char_width * 1.2  # Add 20% spacing between characters
+            # Check if adding this word would exceed max width
+            if current_width + word_width > max_width and current_line:
+                # Process current line
+                line_x = x_pos
+                for char in ' '.join(current_line):
+                    if char != ' ':
+                        # Create character path
+                        char_path = [
+                            {'x': line_x, 'y': y_pos},  # Top left
+                            {'x': line_x + char_width, 'y': y_pos},  # Top right
+                            {'x': line_x + char_width, 'y': y_pos + char_height},  # Bottom right
+                            {'x': line_x, 'y': y_pos + char_height},  # Bottom left
+                            {'x': line_x, 'y': y_pos}  # Back to start
+                        ]
+                        paths.append(char_path)
+                    line_x += char_width * 1.2
+                
+                # Move to next line
+                y_pos += char_height * 1.5
+                current_line = [word]
+                current_width = word_width
+            else:
+                current_line.append(word)
+                current_width += word_width
+        
+        # Process remaining line if any
+        if current_line:
+            line_x = x_pos
+            for char in ' '.join(current_line):
+                if char != ' ':
+                    char_path = [
+                        {'x': line_x, 'y': y_pos},  # Top left
+                        {'x': line_x + char_width, 'y': y_pos},  # Top right
+                        {'x': line_x + char_width, 'y': y_pos + char_height},  # Bottom right
+                        {'x': line_x, 'y': y_pos + char_height},  # Bottom left
+                        {'x': line_x, 'y': y_pos}  # Back to start
+                    ]
+                    paths.append(char_path)
+                line_x += char_width * 1.2
+        
+        logger.debug(f"Generated {len(paths)} character paths")
+        return paths
         
         logger.debug(f"Generated {len(paths)} paths")
         return paths

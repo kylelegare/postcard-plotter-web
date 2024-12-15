@@ -41,12 +41,13 @@ def handle_text_update(data):
     
     logger.debug(f"Received text update: text='{text}', fontSize={font_size}")
     
-    # For now, just echo back the text and font size
+    # Generate preview data for both visual display and plotter paths
     preview_data = {
         'text': text,
-        'fontSize': font_size
+        'fontSize': font_size,
+        'plotPaths': font_parser.get_text_paths(text, font_size)
     }
-    logger.debug(f"Sending preview data: {preview_data}")
+    logger.debug(f"Sending preview data with {len(preview_data['plotPaths'])} paths")
     
     # Send updated preview data back to client
     socketio.emit('preview_update', preview_data)
