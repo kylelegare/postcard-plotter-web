@@ -19,7 +19,7 @@ class FontParser:
         """Generate a potential mistake for a word
         
         Args:
-            word: The word to potentially modify
+            word: The word to modify
             
         Returns:
             Tuple of (word, was_modified)
@@ -30,15 +30,18 @@ class FontParser:
         if (len(word) <= 2 or 
             not word.islower() or 
             not word.isalpha()):
+            logger.debug(f"Skipping word '{word}' - not eligible for mistakes")
             return word, False
             
         # Check if we should generate a mistake based on frequency
-        if random.random() > self.mistake_frequency:
+        if random.random() >= self.mistake_frequency:
+            logger.debug(f"Skipping word '{word}' - random check failed")
             return word, False
             
         # Find vowels in the word
         vowel_positions = [i for i, char in enumerate(word) if char in self.vowels]
         if not vowel_positions:
+            logger.debug(f"Skipping word '{word}' - no vowels found")
             return word, False
             
         # Select a random vowel position and replacement
@@ -46,8 +49,9 @@ class FontParser:
         current_vowel = word[pos]
         replacement = random.choice([v for v in self.vowels if v != current_vowel])
         
-        # Create the mistake
-        return (word[:pos] + replacement + word[pos+1:]), True
+        modified = word[:pos] + replacement + word[pos+1:]
+        logger.debug(f"Created mistake: '{word}' -> '{modified}'")
+        return modified, True
     
     def load_font(self):
         """Initialize with basic character shapes for testing"""
@@ -124,107 +128,96 @@ class FontParser:
         x_pos = margin
         y_pos = margin
         
-        # Track mistake positions for strike-through
-        mistake_positions = []  # List of (x, y, width) for mistakes
-        
         # Base size is 40 units, scale everything relative to requested font size
         scale = font_size / 40
         char_width = 30 * scale
         char_height = 40 * scale
         max_width = 600 - (margin * 2)  # Max width with margins
         
-        logger.debug(f"Converting text: '{text}' at font size {font_size} (scale: {scale})")
-        logger.debug(f"Mistake frequency set to: {self.mistake_frequency}")
+        logger.debug(f"Converting text: '{text}' at font size {font_size}")
+        logger.debug(f"Scale: {scale}, Mistake frequency: {self.mistake_frequency}")
         
-        # Split text into words for wrapping
+        # Split text into words
         words = text.split()
         current_line = []
-        current_width = 0
-        line_x = x_pos
+        line_start_x = x_pos
+        current_x = x_pos
+        
+        # Track mistakes for strike-through
+        mistakes_to_strike = []
         
         for word in words:
             # Generate potential mistake
             modified_word, is_mistake = self.generate_mistake(word)
-            logger.debug(f"Word: {word}, Modified: {modified_word}, Is mistake: {is_mistake}")
-            
-            # Calculate word width
             word_width = len(modified_word) * char_width * 1.2
             
-            # Add word to current line
-            test_line = (current_line + [modified_word]) if current_line else [modified_word]
-            test_width = sum(len(w) * char_width * 1.2 for w in test_line)
-            
-            if test_width > max_width and current_line:
-                # Process current line
-                line_x = x_pos
-                for word_to_render in current_line:
-                    if word_to_render != ' ':
-                        word_start_x = line_x
-                        # Get character's stroke paths
-                        for char in word_to_render:
-                            char_paths = self.font_data.get(char, self.font_data['I'])
-                            
-                            # Transform and scale each path
-                            for stroke in char_paths:
-                                path = []
-                                for x, y in stroke:
-                                    path.append({
-                                        'x': line_x + (x * scale),
-                                        'y': y_pos + (y * scale)
-                                    })
-                                paths.append(path)
-                            line_x += char_width * 1.2
-                        
-                        # If this word was a mistake, record its position
-                        if word_to_render == modified_word and is_mistake:
-                            mistake_positions.append({
-                                'x': word_start_x,
-                                'y': y_pos,
-                                'width': word_width
-                            })
-                            logger.debug(f"Added mistake position for word: {word_to_render}")
-                    
-                    line_x += char_width * 0.5  # Space between words
-                
-                # Move to next line
-                y_pos += char_height * 1.5
-                current_line = [modified_word]
-                current_width = len(modified_word) * char_width * 1.2
-            else:
-                current_line.append(modified_word)
-                current_width = test_width
-
-        # Process remaining line if any
-        if current_line:
-            line_x = x_pos
-            for word_to_render in current_line:
-                if word_to_render != ' ':
-                    for char in word_to_render:
+            # Check if we need to wrap to next line
+            if current_x + word_width > max_width + margin and current_line:
+                # Render current line
+                render_x = line_start_x
+                for w in current_line:
+                    # Get paths for each character
+                    for char in w:
                         char_paths = self.font_data.get(char, self.font_data['I'])
                         for stroke in char_paths:
                             path = []
                             for x, y in stroke:
                                 path.append({
-                                    'x': line_x + (x * scale),
+                                    'x': render_x + (x * scale),
                                     'y': y_pos + (y * scale)
                                 })
                             paths.append(path)
-                        line_x += char_width * 1.2
-                line_x += char_width * 0.5  # Space between words
-
-
-        # Add strike-through paths for mistakes
-        for mistake in mistake_positions:
-            # Create strike-through line (slightly diagonal for natural look)
-            strike_y = mistake['y'] + (char_height * 0.4)  # Strike through middle of text
+                        render_x += char_width
+                    render_x += char_width * 0.2  # Space between words
+                
+                # Move to next line
+                y_pos += char_height * 1.5
+                current_line = []
+                line_start_x = x_pos
+                current_x = x_pos
+            
+            # Add word to current line
+            current_line.append(modified_word)
+            
+            # If this is a mistake, track it for strike-through
+            if is_mistake:
+                logger.debug(f"Tracking mistake: '{modified_word}' at x={current_x}, y={y_pos}")
+                mistakes_to_strike.append({
+                    'x': current_x,
+                    'y': y_pos,
+                    'width': word_width
+                })
+            
+            current_x += word_width + (char_width * 0.2)
+        
+        # Render remaining line if any
+        if current_line:
+            render_x = line_start_x
+            for w in current_line:
+                for char in w:
+                    char_paths = self.font_data.get(char, self.font_data['I'])
+                    for stroke in char_paths:
+                        path = []
+                        for x, y in stroke:
+                            path.append({
+                                'x': render_x + (x * scale),
+                                'y': y_pos + (y * scale)
+                            })
+                        paths.append(path)
+                    render_x += char_width
+                render_x += char_width * 0.2
+        
+        # Add strike-through for mistakes
+        for mistake in mistakes_to_strike:
+            strike_y = mistake['y'] + (char_height * 0.5)
             strike_path = [
                 {'x': mistake['x'], 'y': strike_y},
-                {'x': mistake['x'] + mistake['width'], 'y': strike_y + (char_height * 0.2)}
+                {'x': mistake['x'] + mistake['width'], 'y': strike_y + (char_height * 0.1)}
             ]
             paths.append(strike_path)
-            logger.debug(f"Added strike-through at y={strike_y} with width={mistake['width']}")
+            logger.debug(f"Added strike-through at ({mistake['x']}, {strike_y})")
         
-        logger.debug(f"Generated {len(paths)} paths ({len(mistake_positions)} mistakes)")
+        logger.debug(f"Generated {len(paths)} paths with {len(mistakes_to_strike)} mistakes")
         return paths
     
     def get_char_width(self, char: str) -> float:
