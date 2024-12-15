@@ -23,15 +23,16 @@ class FontLoadObserver {
         this.setupEventListeners();
         this.setupWebSocket();
         
+        // Setup canvas first
+        this.setupCanvas();
+        
         // Wait for font to load before initializing canvas
         FontLoadObserver.waitForFont('PremiumUltra').then(() => {
             console.log('PremiumUltra font loaded');
-            this.setupCanvas();
             // Trigger initial preview
             this.updatePreview();
         }).catch(err => {
             console.warn('Font loading failed, falling back to system font:', err);
-            this.setupCanvas();
             // Still trigger preview even with fallback font
             this.updatePreview();
         });
