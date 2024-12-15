@@ -86,7 +86,7 @@ python -m pip install https://cdn.evilmadscientist.com/dl/ad/public/AxiDraw_API.
 
 3. Install other Python dependencies:
 ```bash
-pip install flask flask-socketio fonttools
+pip install flask flask-socketio fonttools eventlet==0.33.3
 ```
 
 4. Connect your AxiDraw Mini via USB:

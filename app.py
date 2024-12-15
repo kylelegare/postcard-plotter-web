@@ -1,7 +1,3 @@
-# Configure eventlet first
-import eventlet
-eventlet.monkey_patch()
-
 # Standard library imports
 import os
 import logging
@@ -145,29 +141,9 @@ def disconnect_axidraw():
         logger.error(f"Error disconnecting from AxiDraw: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# Ensure static folders exist
+os.makedirs('static', exist_ok=True)
+os.makedirs('templates', exist_ok=True)
+
 if __name__ == '__main__':
-    try:
-        logger.info("Initializing Flask server...")
-        # Ensure static folders exist
-        os.makedirs('static', exist_ok=True)
-        os.makedirs('templates', exist_ok=True)
-        
-        # Initialize application components
-        logger.info("Initializing AxiDraw controller and font parser...")
-        axidraw = AxiDrawController(dev_mode=False)  # Hardware mode enabled
-        font_parser = FontParser()
-        
-        logger.info("Starting server on port 5000...")
-        socketio.run(
-            app,
-            host='0.0.0.0',
-            port=5000,
-            debug=True,
-            use_reloader=False,
-            log_output=True
-        )
-    except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}")
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-        raise
+    print("Please run 'python main.py' to start the server")
