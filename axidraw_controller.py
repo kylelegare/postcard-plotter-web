@@ -172,6 +172,23 @@ class AxiDrawController:
                 'error': f'Failed to disconnect: {str(e)}'
             }
     
+    def _home_axes(self) -> bool:
+        """Home the AxiDraw axes to establish origin
+        Returns:
+            bool: True if homing successful
+        """
+        try:
+            logger.info("Homing AxiDraw axes...")
+            # Ensure pen is up before any movement
+            self.ad.penup()
+            # Move to physical home position (0,0)
+            self.ad.goto(0, 0)
+            logger.info("Successfully homed AxiDraw")
+            return True
+        except Exception as e:
+            logger.error(f"Error homing AxiDraw: {str(e)}")
+            return False
+
     def plot_paths(self, paths: List[List[Dict[str, float]]]) -> Dict[str, any]:
         """Plot the given paths using AxiDraw
         
@@ -251,11 +268,20 @@ class AxiDrawController:
             # Real hardware mode
             logger.info("Configuring AxiDraw plotting parameters")
             try:
+                # Configure movement parameters
                 self.ad.options.speed_pendown = 25  # Adjust based on needs
                 self.ad.options.speed_penup = 75
                 self.ad.options.accel = 75
                 self.ad.options.pen_pos_down = 40
                 self.ad.options.pen_pos_up = 60
+                
+                # Home axes before starting plot
+                if not self._home_axes():
+                    return {
+                        'success': False,
+                        'error': 'Failed to home AxiDraw axes'
+                    }
+                
             except AttributeError as e:
                 logger.error(f"Error configuring AxiDraw options: {str(e)}")
                 return {
@@ -263,17 +289,22 @@ class AxiDrawController:
                     'error': f'Failed to configure AxiDraw: {str(e)}'
                 }
             
-            # Plot each path
-            for i, path in enumerate(paths):
-                if not path:
-                    logger.warning(f"Path {i} is empty, skipping")
-                    continue
+            try:
+                # Ensure we start with pen up
+                self.ad.penup()
+                
+                # Plot each path
+                for i, path in enumerate(paths):
+                    if not path:
+                        logger.warning(f"Path {i} is empty, skipping")
+                        continue
                     
-                try:
-                    # Move to start of path
+                    # Move to start of path with pen up
                     first_point = path[0]
                     logger.debug(f"Path {i}: Moving to ({first_point['x']:.1f}, {first_point['y']:.1f})")
                     self.ad.moveto(first_point['x'], first_point['y'])
+                    
+                    # Lower pen to draw
                     self.ad.pendown()
                     
                     # Draw path
@@ -281,19 +312,30 @@ class AxiDrawController:
                         logger.debug(f"Drawing line to ({point['x']:.1f}, {point['y']:.1f})")
                         self.ad.lineto(point['x'], point['y'])
                     
+                    # Lift pen after path
                     self.ad.penup()
-                except Exception as e:
-                    logger.error(f"Error plotting path {i}: {str(e)}")
-                    return {
-                        'success': False,
-                        'error': f'Failed to plot path {i}: {str(e)}'
-                    }
-            
-            logger.info("Plotting completed successfully")
-            return {
-                'success': True,
-                'message': 'Plotting completed successfully'
-            }
+                
+                # Return to home position after plotting
+                logger.info("Plotting complete, returning to home position")
+                self._home_axes()
+                
+                return {
+                    'success': True,
+                    'message': 'Plotting completed successfully'
+                }
+                
+            except Exception as e:
+                logger.error(f"Error during plotting: {str(e)}")
+                # Try to home axes and lift pen in case of error
+                try:
+                    self.ad.penup()
+                    self._home_axes()
+                except:
+                    pass
+                return {
+                    'success': False,
+                    'error': f'Failed to plot: {str(e)}'
+                }
             
         except Exception as e:
             logger.error(f"Error plotting paths: {str(e)}")
