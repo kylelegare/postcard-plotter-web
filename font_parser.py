@@ -220,19 +220,20 @@ class FontParser:
             return []
             
         paths = []
-        margin = 20  # Reduced margin for better coordinate range
+        margin = 20  # Margin from edges
         x_pos = margin
-        y_pos = margin + (font_size * 0.6)  # Further adjusted start position for better vertical range
+        y_pos = margin + (font_size * 0.4)  # Adjusted start position for better vertical range
         
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
         # Calculate scale based on normalized coordinate system (0-30 units)
-        base_size = 5  # Further reduced base size for more compact plotting
-        scale = (font_size / 12) * (base_size / 8)  # Scale relative to reduced base size
-        char_width = base_size * scale  # Character width
-        char_height = base_size * scale
-        spacing = (base_size / 6) * scale  # More compact spacing between characters
-        max_width = 30 - (margin * 2)  # Further reduced width for better proportions
+        base_size = 5  # Base size for characters
+        scale = (font_size / 12) * (base_size / 8)  # Scale relative to base size
+        char_width = base_size * scale  # Individual character width
+        char_height = base_size * scale * 1.2  # Increased height for better line spacing
+        word_spacing = (base_size / 4) * scale  # Spacing between words
+        letter_spacing = (base_size / 8) * scale  # Spacing between letters
+        max_width = 30 - (margin * 2)  # Available width for text
         
         logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, spacing={spacing}")
         
@@ -253,14 +254,17 @@ class FontParser:
             modified_word, is_mistake = self.generate_mistake(word)
             word_width = len(modified_word) * char_width * 1.2
             
+            # Calculate total width needed for this word including spacing
+            total_width = word_width + (word_spacing if current_line else 0)
+            
             # Check if we need to wrap to next line
-            if current_x + word_width > max_width + margin and current_line:
+            if current_x + total_width > max_width + margin and current_line:
                 # Render current line
                 render_x = line_start_x
                 for w in current_line:
                     # Add word spacing
                     if render_x > line_start_x:
-                        render_x += spacing * 2  # Double spacing between words
+                        render_x += word_spacing  # Consistent word spacing
 
                     for char in w:
                         # Get character paths, fallback to box shape if not found
@@ -281,13 +285,15 @@ class FontParser:
                                 paths.append(path)
 
                         # Move to next character position
-                        render_x += char_width + (spacing * 0.5)  # Add spacing between characters
+                        render_x += char_width + letter_spacing  # Consistent letter spacing
                 
-                # Move to next line
-                y_pos += char_height * 1.5
+                # Move to next line with proper spacing
+                y_pos += char_height * 1.2  # Slightly reduced line spacing for better layout
                 current_line = []
                 line_start_x = x_pos
                 current_x = x_pos
+                
+                logger.debug(f"Moving to new line at y={y_pos}")
             
             # Add word to current line
             current_line.append(modified_word)
