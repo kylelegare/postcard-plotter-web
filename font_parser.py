@@ -63,12 +63,48 @@ class FontParser:
             
             # Create simple character shapes
             # Each character is represented by a series of paths that form its shape
+            # All characters use a 40-unit height
             
-            # Basic single-stroke letters with consistent height of 40 units
+            # Uppercase Letters
             # Letter 'A'
             self.font_data['A'] = [
                 [(0, 40), (20, 0), (40, 40)],  # Outer lines
                 [(10, 25), (30, 25)]  # Cross bar
+            ]
+            
+            # Letter 'B'
+            self.font_data['B'] = [
+                [(0, 0), (0, 40)],  # Vertical
+                [(0, 0), (20, 0), (25, 5), (25, 15), (20, 20)],  # Top loop
+                [(0, 20), (20, 20), (30, 25), (30, 35), (20, 40), (0, 40)]  # Bottom loop
+            ]
+            
+            # Letter 'C'
+            self.font_data['C'] = [
+                [(30, 5), (20, 0), (10, 0), (0, 10), (0, 30), (10, 40), (20, 40), (30, 35)]
+            ]
+            
+            # Letter 'D'
+            self.font_data['D'] = [
+                [(0, 0), (0, 40)],  # Vertical
+                [(0, 0), (20, 0), (30, 10), (30, 30), (20, 40), (0, 40)]  # Curve
+            ]
+            
+            # Letter 'E'
+            self.font_data['E'] = [
+                [(30, 0), (0, 0), (0, 40), (30, 40)],  # Outline
+                [(0, 20), (20, 20)]  # Middle bar
+            ]
+            
+            # Letter 'F'
+            self.font_data['F'] = [
+                [(0, 40), (0, 0), (30, 0)],  # Vertical and top
+                [(0, 20), (20, 20)]  # Middle bar
+            ]
+            
+            # Letter 'G'
+            self.font_data['G'] = [
+                [(30, 5), (20, 0), (10, 0), (0, 10), (0, 30), (10, 40), (20, 40), (30, 35), (30, 20), (15, 20)]
             ]
             
             # Letter 'H'
@@ -85,36 +121,191 @@ class FontParser:
                 [(0, 40), (20, 40)]  # Bottom bar
             ]
             
-            # Letter 'T'
-            self.font_data['T'] = [
-                [(0, 0), (30, 0)],  # Top bar
-                [(15, 0), (15, 40)]  # Vertical line
+            # Letter 'J'
+            self.font_data['J'] = [
+                [(20, 0), (20, 30), (15, 38), (5, 38), (0, 30)]
             ]
-
-            # Letter 'E'
-            self.font_data['E'] = [
-                [(0, 0), (0, 40)],  # Vertical line
-                [(0, 0), (30, 0)],  # Top bar
-                [(0, 20), (20, 20)],  # Middle bar
-                [(0, 40), (30, 40)]  # Bottom bar
+            
+            # Letter 'K'
+            self.font_data['K'] = [
+                [(0, 0), (0, 40)],  # Vertical
+                [(0, 20), (30, 0)],  # Upper diagonal
+                [(0, 20), (30, 40)]  # Lower diagonal
             ]
-
+            
+            # Letter 'L'
+            self.font_data['L'] = [
+                [(0, 0), (0, 40), (30, 40)]
+            ]
+            
+            # Letter 'M'
+            self.font_data['M'] = [
+                [(0, 40), (0, 0), (20, 20), (40, 0), (40, 40)]
+            ]
+            
+            # Letter 'N'
+            self.font_data['N'] = [
+                [(0, 40), (0, 0), (30, 40), (30, 0)]
+            ]
+            
+            # Letter 'O'
+            self.font_data['O'] = [
+                [(10, 0), (20, 0), (30, 10), (30, 30), (20, 40), (10, 40), (0, 30), (0, 10), (10, 0)]
+            ]
+            
+            # Letter 'P'
+            self.font_data['P'] = [
+                [(0, 40), (0, 0), (20, 0), (30, 5), (30, 15), (20, 20), (0, 20)]
+            ]
+            
+            # Letter 'Q'
+            self.font_data['Q'] = [
+                [(10, 0), (20, 0), (30, 10), (30, 30), (20, 40), (10, 40), (0, 30), (0, 10), (10, 0)],
+                [(15, 25), (35, 45)]  # Tail
+            ]
+            
+            # Letter 'R'
+            self.font_data['R'] = [
+                [(0, 40), (0, 0), (20, 0), (30, 5), (30, 15), (20, 20), (0, 20)],
+                [(15, 20), (30, 40)]  # Leg
+            ]
+            
             # Letter 'S'
             self.font_data['S'] = [
                 [(30, 5), (20, 0), (10, 0), (0, 5), (0, 15), (30, 25), (30, 35), (20, 40), (10, 40), (0, 35)]
             ]
             
-            # Default simple single-stroke shapes for other characters
+            # Letter 'T'
+            self.font_data['T'] = [
+                [(0, 0), (40, 0)],  # Top bar
+                [(20, 0), (20, 40)]  # Vertical line
+            ]
+            
+            # Letter 'U'
+            self.font_data['U'] = [
+                [(0, 0), (0, 30), (10, 40), (20, 40), (30, 30), (30, 0)]
+            ]
+            
+            # Letter 'V'
+            self.font_data['V'] = [
+                [(0, 0), (15, 40), (30, 0)]
+            ]
+            
+            # Letter 'W'
+            self.font_data['W'] = [
+                [(0, 0), (10, 40), (20, 20), (30, 40), (40, 0)]
+            ]
+            
+            # Letter 'X'
+            self.font_data['X'] = [
+                [(0, 0), (30, 40)],
+                [(0, 40), (30, 0)]
+            ]
+            
+            # Letter 'Y'
+            self.font_data['Y'] = [
+                [(0, 0), (15, 20), (30, 0)],
+                [(15, 20), (15, 40)]
+            ]
+            
+            # Letter 'Z'
+            self.font_data['Z'] = [
+                [(0, 0), (30, 0), (0, 40), (30, 40)]
+            ]
+            
+            # Lowercase Letters (smaller height: 30 units)
+            # Letter 'a'
+            self.font_data['a'] = [
+                [(20, 30), (10, 30), (0, 25), (0, 20), (5, 15), (25, 15)],
+                [(25, 15), (25, 30)]
+            ]
+            
+            # Letter 'b'
+            self.font_data['b'] = [
+                [(0, 0), (0, 30)],  # Vertical
+                [(0, 20), (10, 15), (20, 20), (20, 25), (10, 30), (0, 25)]  # Bowl
+            ]
+            
+            # Letter 'c'
+            self.font_data['c'] = [
+                [(20, 17), (10, 15), (0, 20), (0, 25), (10, 30), (20, 28)]
+            ]
+            
+            # Letter 'd'
+            self.font_data['d'] = [
+                [(20, 0), (20, 30)],  # Vertical
+                [(20, 25), (10, 30), (0, 25), (0, 20), (10, 15), (20, 20)]  # Bowl
+            ]
+            
+            # Letter 'e'
+            self.font_data['e'] = [
+                [(0, 23), (20, 23), (20, 20), (10, 15), (0, 20), (0, 25), (10, 30), (20, 28)]
+            ]
+            
+            # Letter 'f'
+            self.font_data['f'] = [
+                [(10, 30), (10, 5), (15, 0), (20, 0)],
+                [(5, 15), (15, 15)]
+            ]
+            
+            # Letter 'g'
+            self.font_data['g'] = [
+                [(20, 15), (20, 35), (15, 40), (5, 40), (0, 35)],
+                [(20, 25), (10, 30), (0, 25), (0, 20), (10, 15), (20, 20)]
+            ]
+            
+            # Letter 'h'
+            self.font_data['h'] = [
+                [(0, 0), (0, 30)],  # Vertical
+                [(0, 20), (10, 15), (20, 20), (20, 30)]  # Arch
+            ]
+            
+            # Letter 'i'
+            self.font_data['i'] = [
+                [(10, 15), (10, 30)],  # Main stroke
+                [(10, 5), (10, 7)]  # Dot
+            ]
+            
+            # Letter 'j'
+            self.font_data['j'] = [
+                [(10, 15), (10, 35), (5, 40), (0, 35)],  # Hook
+                [(10, 5), (10, 7)]  # Dot
+            ]
+            
+            # Common punctuation and numbers
+            # Period
+            self.font_data['.'] = [
+                [(0, 38), (0, 40)]
+            ]
+            
+            # Comma
+            self.font_data[','] = [
+                [(0, 38), (0, 42), (-2, 44)]
+            ]
+            
+            # Space (empty path)
+            self.font_data[' '] = []
+            
+            # Question mark
+            self.font_data['?'] = [
+                [(0, 10), (0, 5), (5, 0), (15, 0), (20, 5), (20, 10), (10, 20), (10, 25)],
+                [(10, 35), (10, 37)]  # Dot
+            ]
+            
+            # Exclamation mark
+            self.font_data['!'] = [
+                [(10, 0), (10, 25)],  # Main stroke
+                [(10, 35), (10, 37)]  # Dot
+            ]
+            
+            # Default shape for unimplemented characters (small rectangle)
             for char in range(32, 127):  # ASCII printable chars
                 if chr(char) not in self.font_data:
                     char_str = chr(char)
-                    if char_str == ' ':
-                        self.font_data[char_str] = []  # Empty path for space
-                    else:
-                        # Simple vertical line for unimplemented characters
-                        self.font_data[char_str] = [
-                            [(15, 0), (15, 40)]
-                        ]
+                    # Simple box shape instead of vertical line
+                    self.font_data[char_str] = [
+                        [(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]
+                    ]
             
             logger.info(f"Created development font with {len(self.font_data)} characters")
             
