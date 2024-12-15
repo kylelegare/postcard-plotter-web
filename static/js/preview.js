@@ -62,7 +62,7 @@ class PostcardPreview {
         
         // Set up text rendering with a nice pen-like appearance
         this.ctx.fillStyle = '#1a1a1a';  // Slightly softer than pure black
-        this.ctx.font = `${fontSize}px Arial`;  // Will be replaced with custom font later
+        this.ctx.font = `${fontSize}px PremiumUltra`;  // Using our custom font
         this.ctx.textBaseline = 'top';
         
         // Calculate comfortable margins (about 1 inch at 100 DPI)
