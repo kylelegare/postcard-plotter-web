@@ -52,7 +52,16 @@ class PostcardPreview {
         this.ctx.strokeStyle = 'black';
         this.ctx.lineWidth = 1;
         
+        if (!paths || paths.length === 0) {
+            return;
+        }
+        
+        this.ctx.save();
+        this.ctx.translate(50, 200); // Add margin and center vertically
+        
         paths.forEach(path => {
+            if (!path || path.length === 0) return;
+            
             this.ctx.beginPath();
             path.forEach((point, index) => {
                 if (index === 0) {
@@ -63,6 +72,8 @@ class PostcardPreview {
             });
             this.ctx.stroke();
         });
+        
+        this.ctx.restore();
     }
 }
 

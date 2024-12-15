@@ -74,14 +74,14 @@ class FontParser:
             List of paths, where each path is a list of points
         """
         paths = []
-        x_pos = 50  # Starting x position with margin
-        y_pos = 200  # Vertical center of postcard
+        x_pos = 0  # Starting at origin, canvas will handle margins
+        y_pos = 0  # Starting at origin, canvas will handle centering
         
-        scale = font_size / 72  # Convert points to inches
+        scale = font_size / 40  # Scale relative to base font size
         
         for char in text:
             if char == '\n':
-                x_pos = 50
+                x_pos = 0
                 y_pos += font_size * 1.5
                 continue
                 
@@ -95,10 +95,10 @@ class FontParser:
                             'y': y_pos + y * scale
                         })
                     paths.append(path)
-                x_pos += self.get_char_width(char) * scale
-            
-            # Add space between characters
-            x_pos += 2 * scale
+                x_pos += (self.get_char_width(char) + 5) * scale  # Add consistent spacing
+            else:
+                # For unsupported characters, add space
+                x_pos += 15 * scale
         
         return paths
     
