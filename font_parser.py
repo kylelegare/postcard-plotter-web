@@ -134,21 +134,21 @@ class FontParser:
                         
                         logger.debug(f"Extracted {len(paths)} raw paths for '{char_str}'")
                         
-                        # Scale paths to our coordinate system
+                        # Scale paths to fit AxiDraw Mini workspace (about 150x100mm)
                         scaled_paths = []
                         for path in paths:
                             scaled_path = []
                             for x, y in path:
-                                # Scale paths to fit within normalized coordinate system
-                                scale_factor = 8 / units_per_em  # Further reduced scale for more compact paths
+                                # Scale paths to fit width
+                                scale_factor = 150 / units_per_em  # Scale to fit width
                                 scaled_x = round((x * scale_factor), 1)  # Round to 1 decimal place
-                                scaled_y = round(8 - (y * scale_factor * 0.8), 1)  # Further reduced y-range and scale
+                                scaled_y = round(100 - (y * scale_factor * 0.8), 1)  # Flip Y and scale height
                                 # Only add point if it's significantly different from the last one
                                 if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
                                     scaled_path.append((scaled_x, scaled_y))
                                     logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
                             
-                            # Validate path points and deduplicate
+                            # Validate coordinate range for AxiDraw Mini workspace
                             if len(scaled_path) >= 2:
                                 valid_path = True
                                 last_point = None
@@ -156,7 +156,7 @@ class FontParser:
                                 
                                 for point in scaled_path:
                                     # Validate coordinate range
-                                    if not (0 <= point[0] <= 30 and 0 <= point[1] <= 30):
+                                    if not (0 <= point[0] <= 150 and 0 <= point[1] <= 100):
                                         logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
                                         valid_path = False
                                         break
