@@ -153,7 +153,7 @@ class FontParser:
                                     # Use a smaller base size for more efficient plotting
                                     scale_factor = 8 / units_per_em  # Further reduced scale for more compact paths
                                     scaled_x = round((x * scale_factor), 1)  # Round to 1 decimal place
-                                    scaled_y = round(10 - (y * scale_factor), 1)  # Reduced y-range and round
+                                    scaled_y = round(8 - (y * scale_factor * 0.8), 1)  # Further reduced y-range and scale
                                     # Only add point if it's significantly different from the last one
                                     if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
                                         scaled_path.append((scaled_x, scaled_y))
@@ -222,7 +222,7 @@ class FontParser:
         paths = []
         margin = 20  # Reduced margin for better coordinate range
         x_pos = margin
-        y_pos = margin + (font_size * 0.8)  # Adjusted start position
+        y_pos = margin + (font_size * 0.6)  # Further adjusted start position for better vertical range
         
         logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
         
