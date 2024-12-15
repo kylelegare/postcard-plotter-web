@@ -151,6 +151,8 @@ class FontParser:
                                 for x, y in path:
                                     # For single-line font, maintain exact path proportions
                                     # Scale to fit within 40x40 units, maintaining stroke precision
+                                    # Scale paths to fit within standard postcard size
+                                    # Use consistent 40-unit base size for both preview and plotting
                                     scale_factor = 40 / units_per_em
                                     scaled_x = (x * scale_factor)
                                     scaled_y = 40 - (y * scale_factor)  # Flip y-coordinate for correct orientation
