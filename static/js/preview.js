@@ -73,14 +73,31 @@ class PostcardPreview {
         // Calculate maximum width for text wrapping
         const maxWidth = this.width - (margin * 2);
         
-        // Split text into lines and render
-        const lines = text.split('\n');
+        // Handle text wrapping and rendering
+        const words = text.split(/\s+/);
         const lineHeight = fontSize * 1.5;
+        let line = '';
         
-        lines.forEach(line => {
-            this.ctx.fillText(line, x, y, maxWidth);  // Added maxWidth for text wrapping
-            y += lineHeight;
+        // Process each word
+        words.forEach(word => {
+            const testLine = line + (line ? ' ' : '') + word;
+            const metrics = this.ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && line !== '') {
+                // Current line is full, render it and start new line
+                this.ctx.fillText(line, x, y, maxWidth);
+                line = word;
+                y += lineHeight;
+            } else {
+                // Add word to current line
+                line = testLine;
+            }
         });
+        
+        // Draw remaining text
+        if (line) {
+            this.ctx.fillText(line, x, y, maxWidth);
+        }
         
         this.ctx.restore();
     }
