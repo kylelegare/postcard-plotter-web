@@ -7,7 +7,47 @@ class FontParser:
     def __init__(self):
         """Initialize font parser with the custom single-stroke font"""
         self.font_data = {}  # Will store parsed font data
+        self.vowels = 'aeiou'  # Vowels for mistake generation
+        self.mistake_frequency = 0  # Default: no mistakes
         self.load_font()
+        
+    def set_mistake_frequency(self, frequency: float):
+        """Set the frequency of intentional mistakes (0.0 to 1.0)"""
+        self.mistake_frequency = max(0.0, min(1.0, frequency))
+        
+    def generate_mistake(self, word: str) -> tuple[str, bool]:
+        """Generate a potential mistake for a word
+        
+        Args:
+            word: The word to potentially modify
+            
+        Returns:
+            Tuple of (word, was_modified)
+        """
+        import random
+        
+        # Skip words with capitals, punctuation, or if too short
+        if (len(word) <= 2 or 
+            not word.islower() or 
+            not word.isalpha()):
+            return word, False
+            
+        # Check if we should generate a mistake based on frequency
+        if random.random() > self.mistake_frequency:
+            return word, False
+            
+        # Find vowels in the word
+        vowel_positions = [i for i, char in enumerate(word) if char in self.vowels]
+        if not vowel_positions:
+            return word, False
+            
+        # Select a random vowel position and replacement
+        pos = random.choice(vowel_positions)
+        current_vowel = word[pos]
+        replacement = random.choice([v for v in self.vowels if v != current_vowel])
+        
+        # Create the mistake
+        return (word[:pos] + replacement + word[pos+1:]), True
     
     def load_font(self):
         """Initialize with basic character shapes for testing"""
@@ -84,6 +124,9 @@ class FontParser:
         x_pos = margin
         y_pos = margin
         
+        # Track mistake positions for strike-through
+        mistake_ranges = []  # List of (start_x, width) for mistakes
+        
         # Base size is 40 units, scale everything relative to requested font size
         scale = font_size / 40
         char_width = 30 * scale
@@ -98,7 +141,17 @@ class FontParser:
         current_width = 0
         
         for word in words:
-            word_width = len(word) * char_width * 1.2  # Include character spacing
+            # Generate potential mistake
+            modified_word, is_mistake = self.generate_mistake(word)
+            word_width = len(modified_word) * char_width * 1.2  # Include character spacing
+            
+            # Track position if this is a mistake
+            if is_mistake:
+                mistake_ranges.append({
+                    'x': x_pos + current_width,
+                    'width': word_width,
+                    'y': y_pos
+                })
             
             # Check if adding this word would exceed max width
             if current_width + word_width > max_width and current_line:
@@ -146,7 +199,16 @@ class FontParser:
         logger.debug(f"Generated {len(paths)} character paths")
         return paths
         
-        logger.debug(f"Generated {len(paths)} paths")
+        # Add strike-through paths for mistakes
+        for mistake in mistake_ranges:
+            # Create diagonal strike-through
+            strike_path = [
+                {'x': mistake['x'], 'y': mistake['y'] + (char_height * 0.3)},
+                {'x': mistake['x'] + mistake['width'], 'y': mistake['y'] + (char_height * 0.7)}
+            ]
+            paths.append(strike_path)
+        
+        logger.debug(f"Generated {len(paths)} paths ({len(mistake_ranges)} mistakes)")
         return paths
     
     def get_char_width(self, char: str) -> float:

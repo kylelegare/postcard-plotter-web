@@ -16,6 +16,8 @@ class PostcardPreview {
         const messageText = document.getElementById('messageText');
         const fontSize = document.getElementById('fontSize');
         const fontSizeValue = document.getElementById('fontSizeValue');
+        const mistakeFrequency = document.getElementById('mistakeFrequency');
+        const mistakeValue = document.getElementById('mistakeValue');
         
         messageText.addEventListener('input', () => {
             this.updatePreview();
@@ -23,6 +25,23 @@ class PostcardPreview {
         
         fontSize.addEventListener('input', (e) => {
             fontSizeValue.textContent = `${e.target.value}pt`;
+            this.updatePreview();
+        });
+
+        mistakeFrequency.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            // Update display text based on frequency
+            if (value === 0) {
+                mistakeValue.textContent = 'Never';
+            } else if (value <= 20) {
+                mistakeValue.textContent = 'Rare';
+            } else if (value <= 50) {
+                mistakeValue.textContent = 'Occasional';
+            } else if (value <= 80) {
+                mistakeValue.textContent = 'Frequent';
+            } else {
+                mistakeValue.textContent = 'Very Frequent';
+            }
             this.updatePreview();
         });
     }
@@ -36,10 +55,12 @@ class PostcardPreview {
     updatePreview() {
         const text = document.getElementById('messageText').value;
         const fontSize = document.getElementById('fontSize').value;
+        const mistakeFrequency = document.getElementById('mistakeFrequency').value;
         
         this.socket.emit('update_text', {
             text: text,
-            fontSize: parseInt(fontSize)
+            fontSize: parseInt(fontSize),
+            mistakeFrequency: parseInt(mistakeFrequency) / 100 // Convert to 0-1 range
         });
     }
     

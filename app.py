@@ -45,8 +45,12 @@ def handle_text_update(data):
     """Handle text updates from client"""
     text = data.get('text', '')
     font_size = data.get('fontSize', 12)
+    mistake_frequency = data.get('mistakeFrequency', 0.0)
     
-    logger.debug(f"Received text update: text='{text}', fontSize={font_size}")
+    logger.debug(f"Received text update: text='{text}', fontSize={font_size}, mistakeFreq={mistake_frequency}")
+    
+    # Update font parser mistake frequency
+    font_parser.set_mistake_frequency(mistake_frequency)
     
     # Generate preview data for both visual display and plotter paths
     preview_data = {
