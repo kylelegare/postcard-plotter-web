@@ -149,13 +149,26 @@ class FontParser:
                             for path_idx, path in enumerate(paths):
                                 scaled_path = []
                                 for x, y in path:
-                                    # Flip y-coordinate since TTF has origin at bottom
-                                    # Scale to 40 units height and add padding
-                                    scaled_x = (x * 40 / units_per_em)
-                                    scaled_y = 40 - (y * 40 / units_per_em)
+                                    # For single-line font, maintain exact path proportions
+                                    # Scale to fit within 40x40 units, maintaining stroke precision
+                                    scale_factor = 40 / units_per_em
+                                    scaled_x = (x * scale_factor)
+                                    scaled_y = 40 - (y * scale_factor)  # Flip y-coordinate for correct orientation
                                     scaled_path.append((scaled_x, scaled_y))
-                                if len(scaled_path) >= 2:  # Only add valid paths
-                                    scaled_paths.append(scaled_path)
+                                    logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
+                                # Validate path points are within bounds and properly formatted
+                                    if len(scaled_path) >= 2:
+                                        # Ensure all coordinates are within valid range (0-40)
+                                        valid_path = True
+                                        for point in scaled_path:
+                                            if not (0 <= point[0] <= 40 and 0 <= point[1] <= 40):
+                                                logger.warning(f"Invalid coordinates in path for '{char_str}': {point}")
+                                                valid_path = False
+                                                break
+                                        
+                                        if valid_path:
+                                            scaled_paths.append(scaled_path)
+                                            logger.debug(f"Added valid path for '{char_str}' with {len(scaled_path)} points")
                                     
                             logger.debug(f"Converted {len(scaled_paths)} scaled paths for '{char_str}'")
                             self.font_data[char_str] = scaled_paths
