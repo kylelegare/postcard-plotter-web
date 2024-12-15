@@ -58,17 +58,15 @@ class AxiDrawController:
                     self.ad.interactive()
                     logger.debug("Interactive mode enabled")
                     
+                    # Connect to the device
                     self.ad.connect()
                     logger.info("Successfully connected to physical AxiDraw device")
                     
-                    # Test connection by getting version
-                    version = self.ad.version()
-                    logger.info(f"Connected to AxiDraw firmware version: {version}")
-                    
+                    # Set connection status
                     self.connected = True
                     return {
                         'success': True,
-                        'message': f'Connected to physical AxiDraw device (Firmware v{version})'
+                        'message': 'Successfully connected to physical AxiDraw device'
                     }
                 except Exception as e:
                     logger.error(f"Failed to connect to physical AxiDraw: {str(e)}")
