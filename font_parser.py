@@ -1,7 +1,18 @@
 import logging
 from typing import List, Dict, Tuple
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class WorkspaceBounds:
+    """Physical workspace dimensions for AxiDraw Mini"""
+    MIN_X: float = 10.0  # mm from left edge
+    MAX_X: float = 95.0  # mm (105mm total width - margins)
+    MIN_Y: float = 10.0  # mm from bottom edge
+    MAX_Y: float = 50.0  # mm (60mm total height - margins)
+    WIDTH: float = MAX_X - MIN_X  # Effective width
+    HEIGHT: float = MAX_Y - MIN_Y  # Effective height
 
 class FontParser:
     def __init__(self):
@@ -9,356 +20,253 @@ class FontParser:
         self.font_data = {}  # Will store parsed font data
         self.vowels = 'aeiou'  # Vowels for mistake generation
         self.mistake_frequency = 0  # Default: no mistakes
+        self.workspace = WorkspaceBounds()
+        self.preview_width = 600  # Preview canvas width
+        self.preview_height = 400  # Preview canvas height
         self.load_font()
-        
+
     def set_mistake_frequency(self, frequency: float):
         """Set the frequency of intentional mistakes (0.0 to 1.0)"""
         self.mistake_frequency = max(0.0, min(1.0, frequency))
-        
+
     def generate_mistake(self, word: str) -> tuple[str, bool]:
         """Generate a potential mistake for a word"""
         import random
-        
+
         # Skip words with capitals, punctuation, or if too short
         if (len(word) <= 2 or 
             not word.islower() or 
             not word.isalpha()):
             logger.debug(f"Skipping word '{word}' - not eligible for mistakes")
             return word, False
-            
+
         # Check if we should generate a mistake based on frequency
         if random.random() >= self.mistake_frequency:
             logger.debug(f"Skipping word '{word}' - random check failed")
             return word, False
-            
+
         # Find vowels in the word
         vowel_positions = [i for i, char in enumerate(word) if char in self.vowels]
         if not vowel_positions:
             logger.debug(f"Skipping word '{word}' - no vowels found")
             return word, False
-            
+
         # Select a random vowel position and replacement
         pos = random.choice(vowel_positions)
         current_vowel = word[pos]
         replacement = random.choice([v for v in self.vowels if v != current_vowel])
-        
+
         modified = word[:pos] + replacement + word[pos+1:]
         logger.debug(f"Created mistake: '{word}' -> '{modified}'")
         return modified, True
+
+    def scale_to_physical(self, x: float, y: float, preview_bounds: Dict[str, float]) -> Tuple[float, float]:
+        """Scale preview coordinates to physical AxiDraw coordinates"""
+        # First normalize the coordinates (0-1)
+        norm_x = (x - preview_bounds['min_x']) / (preview_bounds['max_x'] - preview_bounds['min_x'])
+        norm_y = (y - preview_bounds['min_y']) / (preview_bounds['max_y'] - preview_bounds['min_y'])
+
+        # Then scale to physical space
+        physical_x = self.workspace.MIN_X + (norm_x * self.workspace.WIDTH)
+        physical_y = self.workspace.MIN_Y + (norm_y * self.workspace.HEIGHT)
+
+        return round(physical_x, 3), round(physical_y, 3)
 
     def load_font(self):
         """Load font from TTF file and extract glyph paths"""
         try:
             from fontTools.ttLib import TTFont
             from fontTools.pens.recordingPen import RecordingPen
-            
+
             logger.debug("Loading PremiumUltra font")
-            # Use the single-stroke font (SL) for actual plotting
             font_path = "static/fonts/PremiumUltra54SL.ttf"
-            
+
             # Load the font file
             logger.debug(f"Attempting to load font from: {font_path}")
             ttfont = TTFont(font_path)
-            
+
             # Get required tables
             glyf = ttfont.get('glyf')
             if glyf is None:
                 logger.error("Font is missing required 'glyf' table")
                 raise ValueError("Invalid font file: missing glyph data")
-                
-            # Initialize font data dictionary
-            self.font_data = {}
-            
+
             # Get the cmap table for character to glyph mapping
             cmap = ttfont.getBestCmap()
             if cmap is None:
                 logger.error("Could not find suitable cmap table in font")
                 raise ValueError("Invalid font file: no character mapping found")
-                
+
             units_per_em = ttfont['head'].unitsPerEm
             logger.debug(f"Font loaded successfully. Units per em: {units_per_em}")
-            
+
+            # Store the units_per_em for later scaling calculations
+            self.units_per_em = units_per_em
+
             # Extract paths for each printable character
             for char in range(32, 127):  # ASCII printable chars
                 char_str = chr(char)
-                
+
                 try:
                     # Get glyph name for this character
                     glyph_id = cmap.get(ord(char_str))
                     if glyph_id is None:
                         logger.debug(f"No glyph mapping found for character '{char_str}' (ord={ord(char_str)})")
                         continue
-                    
+
                     glyph = glyf[glyph_id]
                     if glyph is None:
                         logger.debug(f"Null glyph for character '{char_str}' (id={glyph_id})")
                         continue
-                    
-                    logger.debug(f"Processing glyph for '{char_str}' (id={glyph_id}, contours={glyph.numberOfContours})")
-                    
+
                     # Use RecordingPen to capture the glyph's path
                     pen = RecordingPen()
-                    if glyph.numberOfContours > 0:  # Skip empty glyphs
+                    if glyph.numberOfContours > 0:
                         glyph.draw(pen, glyf)
-                        logger.debug(f"Captured {len(pen.value)} path commands for '{char_str}'")
-                    
-                        # Convert pen recordings to our path format
+
+                        # Convert pen recordings to normalized paths (0-1 range)
                         paths = []
                         current_path = []
-                        
+
                         for cmd, args in pen.value:
                             if cmd == 'moveTo':
                                 if current_path:
                                     paths.append(current_path)
-                                current_path = [tuple(args[0])]
+                                current_path = [self.normalize_point(args[0], units_per_em)]
                             elif cmd == 'lineTo':
-                                current_path.append(tuple(args[0]))
+                                current_path.append(self.normalize_point(args[0], units_per_em))
+                            elif cmd == 'qCurveTo':
+                                # Approximate curves with line segments
+                                if current_path and len(args) >= 2:
+                                    start = current_path[-1]
+                                    end = self.normalize_point(args[-1], units_per_em)
+                                    # Add intermediate points
+                                    for i in range(1, 5):  # Use 4 segments for curves
+                                        t = i / 5
+                                        x = start[0] * (1-t) + end[0] * t
+                                        y = start[1] * (1-t) + end[1] * t
+                                        current_path.append((x, y))
                             elif cmd == 'closePath':
                                 if current_path and current_path[0] != current_path[-1]:
                                     current_path.append(current_path[0])
                                 if current_path:
                                     paths.append(current_path)
                                 current_path = []
-                            elif cmd == 'qCurveTo':
-                                # Handle quadratic curves by approximating with line segments
-                                if len(args) >= 2:  # Need at least start and end points
-                                    start = current_path[-1] if current_path else (0, 0)
-                                    for i in range(0, len(args)-1):
-                                        t = i / (len(args)-1)
-                                        x = (1-t)*start[0] + t*args[-1][0]
-                                        y = (1-t)*start[1] + t*args[-1][1]
-                                        current_path.append((x, y))
-                        
+
                         if current_path:
                             paths.append(current_path)
-                        
-                        logger.debug(f"Extracted {len(paths)} raw paths for '{char_str}'")
-                        
-                        # Scale paths to fit AxiDraw Mini workspace (about 150x100mm)
-                        scaled_paths = []
-                        for path in paths:
-                            scaled_path = []
-                            for x, y in path:
-                                # Scale and transform coordinates to match AxiDraw workspace
-                                # Scale to fit AxiDraw Mini workspace (150x100mm)
-                                # Use extremely conservative scaling with larger margins for safety
-                                safe_width = 50   # Leave 50mm margin on each side
-                                safe_height = 30  # Leave 35mm margin top/bottom
-                                scale_factor = min(safe_width, safe_height) / units_per_em * 0.6  # Additional 40% reduction
-                                
-                                # Transform to AxiDraw coordinate system with fixed margins
-                                margin_x = 50  # Fixed left margin
-                                margin_y = 40  # Fixed top margin
-                                scaled_x = round(margin_x + (x * scale_factor), 1)
-                                scaled_y = round(margin_y + (y * scale_factor), 1)
-                                # Only add point if it's significantly different from the last one
-                                if not scaled_path or abs(scaled_path[-1][0] - scaled_x) > 0.1 or abs(scaled_path[-1][1] - scaled_y) > 0.1:
-                                    scaled_path.append((scaled_x, scaled_y))
-                                    logger.debug(f"Scaled point ({x}, {y}) to ({scaled_x:.2f}, {scaled_y:.2f})")
-                            
-                            # Validate coordinate range for AxiDraw Mini workspace
-                            if len(scaled_path) >= 2:
-                                valid_path = True
-                                last_point = None
-                                deduped_path = []
-                                
-                                for point in scaled_path:
-                                    # Validate coordinates are within safe plotting area (with margins)
-                                    if not (10 <= point[0] <= 140 and 10 <= point[1] <= 90):
-                                        logger.warning(f"Point outside safe plotting area for '{char_str}': {point}")
-                                        valid_path = False
-                                        break
-                                        
-                                    # Deduplicate consecutive identical points
-                                    if last_point is None or point != last_point:
-                                        deduped_path.append(point)
-                                        last_point = point
-                                
-                                if valid_path and len(deduped_path) >= 2:
-                                    # Only add if path is not already present
-                                    path_str = str(deduped_path)
-                                    if path_str not in set(str(p) for p in scaled_paths):
-                                        scaled_paths.append(deduped_path)
-                                        logger.debug(f"Added unique path for '{char_str}' with {len(deduped_path)} points")
-                        
-                        logger.debug(f"Converted {len(scaled_paths)} scaled paths for '{char_str}'")
-                        self.font_data[char_str] = scaled_paths
-                        
+
+                        # Store normalized paths
+                        if paths:
+                            self.font_data[char_str] = paths
+
                 except Exception as e:
                     logger.error(f"Error processing character '{char_str}': {e}")
-            
+
             logger.info(f"Created font with {len(self.font_data)} characters")
-            
+
         except Exception as e:
             logger.error(f"Error loading font: {str(e)}")
-            # Provide minimal fallback in case of complete failure
-            self.font_data = {' ': []}
+            self.font_data = {' ': []}  # Minimal fallback
             raise
 
-    def get_text_paths(self, text: str, font_size: int) -> List[Dict[str, float]]:
+    def normalize_point(self, point: Tuple[float, float], units_per_em: int) -> Tuple[float, float]:
+        """Convert font units to normalized coordinates (0-1 range)"""
+        return (
+            point[0] / units_per_em,
+            point[1] / units_per_em
+        )
+
+    def get_text_paths(self, text: str, font_size: int, for_preview: bool = True) -> List[Dict[str, float]]:
         """Convert text to plottable paths
-        
+
         Args:
             text: The text to convert
             font_size: Font size in points
-            
+            for_preview: If True, generate preview coordinates, else physical coordinates
+
         Returns:
             List of paths, where each path is a list of points
         """
         if not text:
-            logger.debug("Empty text received, returning empty paths list")
             return []
-            
+
+        # Calculate base scaling and spacing
+        points_to_mm = 0.352778  # 1 point = 0.352778mm
+        base_scale = font_size * points_to_mm  # Convert font size to mm
+
+        # Preview dimensions (in preview units)
+        preview_margin = 20
+        preview_bounds = {
+            'min_x': preview_margin,
+            'max_x': self.preview_width - preview_margin,
+            'min_y': preview_margin,
+            'max_y': self.preview_height - preview_margin
+        }
+
+        # Layout parameters
+        line_height = font_size * 1.5
+        word_spacing = font_size * 0.3
+        char_spacing = font_size * 0.15
+
         paths = []
-        margin = 20  # Margin from edges in preview units
-        x_pos = margin
-        y_pos = margin + (font_size * 0.4)  # Initial vertical position
-        
-        logger.debug(f"Starting text layout at position ({x_pos}, {y_pos})")
-        
-        # Calculate scale and dimensions for preview canvas
-        base_size = 5  # Base size for characters
-        scale = (font_size / 12) * (base_size / 8)  # Scale relative to base size
-        char_width = base_size * scale  # Individual character width
-        char_height = base_size * scale * 1.2  # Line height with spacing
-        word_spacing = (base_size / 4) * scale  # Space between words
-        letter_spacing = (base_size / 8) * scale  # Space between letters
-        
-        # Available width for text (in preview coordinate system)
-        preview_width = 600  # Preview canvas width
-        max_width = preview_width - (margin * 2)  # Account for margins
-        
-        logger.debug(f"Text layout parameters: scale={scale}, char_width={char_width}, word_spacing={word_spacing}, letter_spacing={letter_spacing}, max_width={max_width}")
-        
-        # Track mistakes for strike-through
-        mistakes_to_strike = []
-        
-        # Process each line from input text
-        lines = text.split('\n')
-        for line_text in lines:
-            # Reset x position for new line
-            current_x = x_pos
-            line_start_x = x_pos
-            current_line = []
-            
-            # Process words in current line
-            words = line_text.split()
-            for word in words:
+        x = preview_margin
+        y = preview_margin + font_size  # Start with baseline offset
+
+        # Process each line
+        for line in text.split('\n'):
+            current_x = x
+            words = line.split()
+
+            for word_idx, word in enumerate(words):
                 # Generate potential mistake
                 modified_word, is_mistake = self.generate_mistake(word)
-                
-                # Calculate total width needed for this word including spacing
-                word_width = len(modified_word) * (char_width + letter_spacing)
-                total_width = word_width + (word_spacing if current_line else 0)
-                
-                # Check if word fits on current line
-                if current_x + total_width > max_width and current_line:
-                    # Render current line before starting new one
-                    render_x = line_start_x
-                    for w in current_line:
-                        # Add word spacing if not first word
-                        if render_x > line_start_x:
-                            render_x += word_spacing
-                        
-                        # Render each character
-                        for char in w:
-                            char_paths = self.font_data.get(char, [[(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]])
-                            for stroke in char_paths:
-                                path = []
-                                for x, y in stroke:
-                                    scaled_x = render_x + (x * scale)
-                                    scaled_y = y_pos + (y * scale)
-                                    path.append({'x': scaled_x, 'y': scaled_y})
-                                if len(path) >= 2:
-                                    paths.append(path)
-                            render_x += char_width + letter_spacing
-                    
-                    # Start new line
-                    y_pos += char_height * 1.2
-                    current_x = x_pos
-                    current_line = [modified_word]
-                    logger.debug(f"Word wrap: moving to new line at y={y_pos}")
-                else:
-                    # Add word to current line
-                    current_line.append(modified_word)
-                
-                # Track mistake if generated
-                if is_mistake:
-                    logger.debug(f"Tracking mistake: '{modified_word}' at x={current_x}, y={y_pos}")
-                    mistakes_to_strike.append({
-                        'x': current_x,
-                        'y': y_pos,
-                        'width': word_width
-                    })
-                
-                # Update position for next word
-                current_x += word_width + word_spacing
-            
-            # Render final line
-            if current_line:
-                render_x = line_start_x
-                for w in current_line:
-                    # Add word spacing if not first word
-                    if render_x > line_start_x:
-                        render_x += word_spacing
-                    
-                    # Render each character
-                    for char in w:
-                        char_paths = self.font_data.get(char, [[(0, 15), (15, 15), (15, 30), (0, 30), (0, 15)]])
-                        for stroke in char_paths:
+
+                # Process each character
+                for char_idx, char in enumerate(modified_word):
+                    if char in self.font_data:
+                        for glyph_path in self.font_data[char]:
                             path = []
-                            for x, y in stroke:
-                                scaled_x = render_x + (x * scale)
-                                scaled_y = y_pos + (y * scale)
-                                path.append({'x': scaled_x, 'y': scaled_y})
-                            if len(path) >= 2:
+
+                            for norm_x, norm_y in glyph_path:
+                                # Scale normalized coordinates to preview space
+                                preview_x = current_x + (norm_x * base_scale * self.preview_width / 100)
+                                preview_y = y + (norm_y * base_scale * self.preview_height / 100)
+
+                                if for_preview:
+                                    # Use preview coordinates directly
+                                    point = {'x': preview_x, 'y': preview_y}
+                                else:
+                                    # Convert to physical coordinates
+                                    phys_x, phys_y = self.scale_to_physical(preview_x, preview_y, preview_bounds)
+                                    point = {'x': phys_x, 'y': phys_y}
+
+                                path.append(point)
+
+                            if len(path) >= 2:  # Only add paths with at least 2 points
                                 paths.append(path)
-                        render_x += char_width + letter_spacing
-            
-            # Move to next line for manual line breaks
-            y_pos += char_height * 1.2
-        
-        # Add strike-through for mistakes
-        for mistake in mistakes_to_strike:
-            strike_y = mistake['y'] + (char_height * 0.5)
-            strike_path = [
-                {'x': mistake['x'], 'y': strike_y},
-                {'x': mistake['x'] + mistake['width'], 'y': strike_y + (char_height * 0.1)}
-            ]
-            paths.append(strike_path)
-        
-        logger.debug(f"Generated {len(paths)} paths with {len(mistakes_to_strike)} mistakes")
+
+                    current_x += char_spacing * (self.preview_width / 100)
+
+                # Add word spacing
+                if word_idx < len(words) - 1:  # Don't add space after last word
+                    current_x += word_spacing * (self.preview_width / 100)
+
+            # Move to next line
+            y += line_height * (self.preview_height / 100)
+
         return paths
 
     def get_char_width(self, char: str) -> float:
-        """Get the width of a character in font units"""
-        # This is a placeholder - implement based on actual font metrics
-        return 30
-    
-    def get_text_bounds(self, text: str, font_size: int) -> Dict[str, float]:
-        """Calculate the bounding box of the text
-        
-        Args:
-            text: The text to measure
-            font_size: Font size in points
-        
-        Returns:
-            Dictionary with width and height of text bounds
-        """
-        scale = font_size / 72
-        
-        # Split text into lines
-        lines = text.split('\n')
-        max_width = 0
-        total_height = 0
-        
-        for line in lines:
-            width = sum(self.get_char_width(c) * scale for c in line)
-            width += (len(line) - 1) * 2 * scale  # Add character spacing
-            max_width = max(max_width, width)
-            total_height += font_size * 1.5
-        
-        return {
-            'width': max_width,
-            'height': total_height
-        }
+        """Get the width of a character in normalized units"""
+        if char not in self.font_data or not self.font_data[char]:
+            return 0.5  # Default width for unknown characters
+
+        # Calculate width from the actual glyph paths
+        paths = self.font_data[char]
+        if not paths:
+            return 0.5
+
+        # Find the maximum x coordinate
+        max_x = max(point[0] for path in paths for point in path)
+        return max_x
