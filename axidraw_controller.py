@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 class WorkspaceBounds:
     """Physical workspace dimensions for AxiDraw Mini"""
     MIN_X: float = 10.0  # mm from left edge
-    MAX_X: float = 95.0  # mm (105mm total width - margins)
+    MAX_X: float = 140.0  # mm (150mm total width - margins)
     MIN_Y: float = 10.0  # mm from bottom edge
-    MAX_Y: float = 50.0  # mm (60mm total height - margins)
+    MAX_Y: float = 90.0  # mm (100mm total height - margins)
     WIDTH: float = MAX_X - MIN_X  # Effective width
     HEIGHT: float = MAX_Y - MIN_Y  # Effective height
 
@@ -57,6 +57,59 @@ class AxiDrawController:
         return (self.workspace.MIN_X <= x <= self.workspace.MAX_X and 
                 self.workspace.MIN_Y <= y <= self.workspace.MAX_Y)
 
+    def _safe_move(self, x: float, y: float, delay_ms: int = 1000) -> bool:
+        """Safely move to a point with bounds checking and delay"""
+        try:
+            if not self.validate_point(x, y):
+                logger.error(f"Attempted move to unsafe coordinates: ({x}, {y})")
+                return False
+
+            logger.debug(f"Moving to coordinates: ({x}, {y})")
+            self.ad.moveto(x, y)
+            self.ad.delay(delay_ms)
+            return True
+        except Exception as e:
+            logger.error(f"Error during safe move: {str(e)}")
+            return False
+
+    def _home_axes(self) -> bool:
+        """Home the AxiDraw axes to establish origin"""
+        try:
+            if self.dev_mode:
+                logger.info("Development mode: Simulated homing of axes")
+                return True
+
+            logger.info("Starting homing sequence...")
+
+            # First ensure pen is up with extra delay
+            logger.debug("Raising pen...")
+            self.ad.penup()
+            self.ad.delay(1000)
+
+            # Move to safe center position first
+            logger.debug("Moving to safe center position...")
+            center_x = (self.workspace.MIN_X + self.workspace.MAX_X) / 2
+            center_y = (self.workspace.MIN_Y + self.workspace.MAX_Y) / 2
+            if not self._safe_move(center_x, center_y, 1000):
+                return False
+
+            # Then move to origin with proper delays
+            logger.debug("Moving to origin...")
+            if not self._safe_move(self.workspace.MIN_X, self.workspace.MIN_Y, 1000):
+                return False
+
+            # Double check pen is up
+            logger.debug("Final pen up check...")
+            self.ad.penup()
+            self.ad.delay(500)
+
+            logger.info("Successfully homed AxiDraw")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error homing AxiDraw: {str(e)}")
+            return False
+
     def connect(self) -> Dict[str, any]:
         """Connect to AxiDraw device"""
         try:
@@ -87,9 +140,28 @@ class AxiDrawController:
                 self.ad.connect()
                 logger.info("Successfully established USB connection to AxiDraw device")
 
+                # Configure movement parameters
+                logger.debug("Configuring movement parameters...")
+                self.ad.options.speed_pendown = 10    # Very slow for precise writing
+                self.ad.options.speed_penup = 25      # Conservative speed for safety
+                self.ad.options.accel = 20           # Lower acceleration for smooth writing
+                self.ad.options.pen_pos_down = 40    # Light touch for writing
+                self.ad.options.pen_pos_up = 75      # Full up position
+                self.ad.options.pen_delay_down = 500  # Extra delay for consistent writing
+                self.ad.options.pen_delay_up = 400    # Standard delay for pen up
+                self.ad.options.model = 3            # AxiDraw Mini model
+                self.ad.options.port = None          # Auto-detect USB port
+                self.ad.options.units = 1            # Use mm units
+                self.ad.options.const_speed = True   # Enable constant speed for better writing
+
+                # Test connection with a pen up command
                 logger.debug("Testing device communication...")
                 self.ad.penup()
                 logger.debug("Pen up command successful")
+
+                # Home the axes
+                if not self._home_axes():
+                    return {'success': False, 'error': 'Failed to home AxiDraw axes'}
 
                 self.connected = True
                 logger.info("Physical AxiDraw device fully connected and responsive")
@@ -117,6 +189,10 @@ class AxiDrawController:
 
             if self.ad:
                 try:
+                    # Ensure pen is up before disconnecting
+                    self.ad.penup()
+                    self.ad.delay(500)
+
                     self.ad.disconnect()
                     self.connected = False
                     logger.info("Disconnected from AxiDraw")
@@ -131,35 +207,6 @@ class AxiDrawController:
         except Exception as e:
             logger.error(f"Error disconnecting from AxiDraw: {str(e)}")
             return {'success': False, 'error': f'Failed to disconnect: {str(e)}'}
-
-    def _home_axes(self) -> bool:
-        """Home the AxiDraw axes to establish origin"""
-        try:
-            if self.dev_mode:
-                logger.info("Development mode: Simulated homing of axes")
-                return True
-
-            logger.info("Homing AxiDraw axes...")
-
-            # First ensure pen is up with extra delay
-            self.ad.penup()
-            self.ad.delay(500)
-
-            # Move to 0,0 with proper delays
-            logger.debug("Moving to origin...")
-            self.ad.moveto(0, 0)
-            self.ad.delay(500)
-
-            # Double check pen is up
-            self.ad.penup()
-            self.ad.delay(200)
-
-            logger.info("Successfully homed AxiDraw")
-            return True
-
-        except Exception as e:
-            logger.error(f"Error homing AxiDraw: {str(e)}")
-            return False
 
     def plot_paths(self, paths: List[List[Dict[str, float]]]) -> Dict[str, any]:
         """Plot the given paths using AxiDraw
@@ -200,6 +247,7 @@ class AxiDrawController:
                             valid_points.append(point)
                         else:
                             invalid_points += 1
+                            logger.warning(f"Point outside bounds: ({point['x']:.1f}, {point['y']:.1f})")
 
                     if len(valid_points) < 2:
                         simulation_logs.append(f"   • Skipping path {i} - insufficient valid points")
@@ -255,21 +303,6 @@ class AxiDrawController:
 
             # Hardware mode plotting
             try:
-                # Configure movement parameters
-                self.ad.options.speed_pendown = 10    # Very slow for precise writing
-                self.ad.options.speed_penup = 25      # Conservative speed for safety
-                self.ad.options.accel = 20           # Lower acceleration for smooth writing
-                self.ad.options.pen_pos_down = 40    # Light touch for writing
-                self.ad.options.pen_pos_up = 75      # Full up position
-                self.ad.options.pen_delay_down = 500  # Extra delay for consistent writing
-                self.ad.options.pen_delay_up = 400    # Standard delay for pen up
-
-                # Configure AxiDraw Mini specific settings
-                self.ad.options.model = 3           # AxiDraw Mini model
-                self.ad.options.port = None         # Auto-detect USB port
-                self.ad.options.units = 1           # Use mm units
-                self.ad.options.const_speed = True  # Enable constant speed for better writing
-
                 # Home axes before starting plot
                 if not self._home_axes():
                     return {'success': False, 'error': 'Failed to home AxiDraw axes'}
@@ -292,7 +325,7 @@ class AxiDrawController:
                                 valid_points.append(point)
                             else:
                                 invalid_points += 1
-                                logger.debug(f"Point ({point['x']:.1f}, {point['y']:.1f}) outside workspace bounds")
+                                logger.warning(f"Point outside bounds: ({point['x']:.1f}, {point['y']:.1f})")
 
                         if len(valid_points) < 2:
                             logger.debug(f"Skipping path {i} - insufficient valid points")
@@ -302,25 +335,23 @@ class AxiDrawController:
 
                         # Move to start position with pen up
                         logger.debug(f"Moving to start position ({first_point['x']}, {first_point['y']})")
-                        self.ad.penup()
-                        self.ad.delay(400)
-                        self.ad.moveto(first_point['x'], first_point['y'])
-                        self.ad.delay(400)
+                        if not self._safe_move(first_point['x'], first_point['y'], 1000):
+                            continue
 
                         # Lower pen and draw
                         logger.debug("Lowering pen...")
                         self.ad.pendown()
-                        self.ad.delay(400)
+                        self.ad.delay(1000)  # Extra delay after pen down
 
                         # Draw each line segment
                         for point in valid_points[1:]:
                             logger.debug(f"Drawing line to ({point['x']}, {point['y']})")
-                            self.ad.lineto(point['x'], point['y'])
-                            self.ad.delay(100)  # Small delay between segments
+                            if not self._safe_move(point['x'], point['y'], 200):  # Shorter delay during drawing
+                                break
 
                         # Lift pen after path
                         self.ad.penup()
-                        self.ad.delay(400)
+                        self.ad.delay(1000)  # Extra delay after pen up
                         paths_plotted += 1
 
                     except Exception as e:
