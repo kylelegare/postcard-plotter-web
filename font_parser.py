@@ -7,10 +7,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WorkspaceBounds:
     """Physical workspace dimensions for AxiDraw Mini"""
-    MIN_X: float = 10.0  # mm from left edge
-    MAX_X: float = 95.0  # mm (105mm total width - margins)
-    MIN_Y: float = 10.0  # mm from bottom edge
-    MAX_Y: float = 50.0  # mm (60mm total height - margins)
+    MIN_X: float = 10.0  # mm from left edge (safe margin)
+    MAX_X: float = 140.0  # mm (150mm total width - margins)
+    MIN_Y: float = 10.0  # mm from bottom edge (safe margin)
+    MAX_Y: float = 90.0  # mm (100mm total height - margins)
     WIDTH: float = MAX_X - MIN_X  # Effective width
     HEIGHT: float = MAX_Y - MIN_Y  # Effective height
 
@@ -66,9 +66,17 @@ class FontParser:
         norm_x = (x - preview_bounds['min_x']) / (preview_bounds['max_x'] - preview_bounds['min_x'])
         norm_y = (y - preview_bounds['min_y']) / (preview_bounds['max_y'] - preview_bounds['min_y'])
 
-        # Then scale to physical space
+        # Clamp normalized values to 0-1 range
+        norm_x = max(0.0, min(1.0, norm_x))
+        norm_y = max(0.0, min(1.0, norm_y))
+
+        # Then scale to physical space, ensuring we stay within bounds
         physical_x = self.workspace.MIN_X + (norm_x * self.workspace.WIDTH)
-        physical_y = self.workspace.MIN_Y + (norm_y * self.workspace.HEIGHT)
+        physical_y = self.workspace.MIN_Y + ((1.0 - norm_y) * self.workspace.HEIGHT)  # Invert Y coordinate
+
+        # Double-check bounds before returning
+        physical_x = max(self.workspace.MIN_X, min(self.workspace.MAX_X, physical_x))
+        physical_y = max(self.workspace.MIN_Y, min(self.workspace.MAX_Y, physical_y))
 
         return round(physical_x, 3), round(physical_y, 3)
 
@@ -204,18 +212,32 @@ class FontParser:
             'max_y': self.preview_height - preview_margin
         }
 
-        # Layout parameters
-        line_height = font_size * 1.5
-        word_spacing = font_size * 0.3
-        char_spacing = font_size * 0.15
+        # Calculate maximum allowed width based on workspace or preview
+        max_allowed_width = self.workspace.WIDTH if not for_preview else (self.preview_width - 2 * preview_margin)
+
+        # Calculate how much we need to scale down to fit
+        total_text_width = len(text) * font_size * points_to_mm * 0.6  # 0.6 is approximate character width ratio
+        scale_factor = min(1.0, max_allowed_width / total_text_width)
+
+        # Adjust layout parameters based on scale
+        line_height = font_size * 1.2 * scale_factor
+        word_spacing = font_size * 0.3 * scale_factor
+        char_spacing = font_size * 0.1 * scale_factor
+
+        # Start position - ensure we stay within bounds
+        x = self.workspace.MIN_X if not for_preview else preview_margin
+        y = self.workspace.MIN_Y + (font_size * scale_factor) if not for_preview else preview_margin + (font_size * scale_factor)
 
         paths = []
-        x = preview_margin
-        y = preview_margin + font_size  # Start with baseline offset
+        current_x = x
+        current_y = y
+
+        logger.debug(f"Starting text layout: preview={for_preview}, scale_factor={scale_factor:.3f}")
+        logger.debug(f"Initial position: x={current_x:.1f}, y={current_y:.1f}")
 
         # Process each line
         for line in text.split('\n'):
-            current_x = x
+            current_x = x  # Reset X position for new line
             words = line.split()
 
             for word_idx, word in enumerate(words):
@@ -229,16 +251,25 @@ class FontParser:
                             path = []
 
                             for norm_x, norm_y in glyph_path:
-                                # Scale normalized coordinates to preview space
-                                preview_x = current_x + (norm_x * base_scale * self.preview_width / 100)
-                                preview_y = y + (norm_y * base_scale * self.preview_height / 100)
-
+                                # Scale normalized coordinates
                                 if for_preview:
-                                    # Use preview coordinates directly
-                                    point = {'x': preview_x, 'y': preview_y}
+                                    # Preview coordinates - can exceed workspace bounds
+                                    point_x = current_x + (norm_x * base_scale * scale_factor * self.preview_width / 100)
+                                    point_y = current_y + (norm_y * base_scale * scale_factor * self.preview_height / 100)
+                                    point = {'x': point_x, 'y': point_y}
                                 else:
-                                    # Convert to physical coordinates
-                                    phys_x, phys_y = self.scale_to_physical(preview_x, preview_y, preview_bounds)
+                                    # Physical coordinates - must stay within workspace bounds
+                                    phys_x = current_x + (norm_x * base_scale * scale_factor)
+                                    phys_y = current_y + (norm_y * base_scale * scale_factor)
+
+                                    # Strict bounds checking for physical coordinates
+                                    phys_x = max(self.workspace.MIN_X, min(self.workspace.MAX_X, phys_x))
+                                    phys_y = max(self.workspace.MIN_Y, min(self.workspace.MAX_Y, phys_y))
+
+                                    if (phys_x != current_x + (norm_x * base_scale * scale_factor) or 
+                                        phys_y != current_y + (norm_y * base_scale * scale_factor)):
+                                        logger.warning(f"Coordinate clamped: ({phys_x:.1f}, {phys_y:.1f})")
+
                                     point = {'x': phys_x, 'y': phys_y}
 
                                 path.append(point)
@@ -246,14 +277,18 @@ class FontParser:
                             if len(path) >= 2:  # Only add paths with at least 2 points
                                 paths.append(path)
 
-                    current_x += char_spacing * (self.preview_width / 100)
+                    # Move to next character position
+                    current_x += char_spacing
 
-                # Add word spacing
-                if word_idx < len(words) - 1:  # Don't add space after last word
-                    current_x += word_spacing * (self.preview_width / 100)
+                # Add word spacing after each word (except last)
+                if word_idx < len(words) - 1:
+                    current_x += word_spacing
 
             # Move to next line
-            y += line_height * (self.preview_height / 100)
+            current_y += line_height
+
+            if not for_preview:
+                logger.debug(f"Line position - x: {x:.1f}, y: {current_y:.1f}")
 
         return paths
 
