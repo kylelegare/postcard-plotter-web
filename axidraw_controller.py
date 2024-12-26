@@ -86,17 +86,14 @@ class AxiDrawController:
             self.ad.penup()
             self.ad.delay(1000)
 
-            # Move to safe center position first
-            logger.debug("Moving to safe center position...")
-            center_x = (self.workspace.MIN_X + self.workspace.MAX_X) / 2
-            center_y = (self.workspace.MIN_Y + self.workspace.MAX_Y) / 2
-            if not self._safe_move(center_x, center_y, 1000):
-                return False
+            # Move slightly past minimum bounds to ensure proper alignment
+            logger.debug("Moving to home position...")
+            home_x = self.workspace.MIN_X - 5  # 5mm past minimum X
+            home_y = self.workspace.MIN_Y - 5  # 5mm past minimum Y
 
-            # Then move to origin with proper delays
-            logger.debug("Moving to origin...")
-            if not self._safe_move(self.workspace.MIN_X, self.workspace.MIN_Y, 1000):
-                return False
+            # Direct movement to home position
+            self.ad.moveto(home_x, home_y)
+            self.ad.delay(1000)
 
             # Double check pen is up
             logger.debug("Final pen up check...")
